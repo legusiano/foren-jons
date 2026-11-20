@@ -22,19 +22,22 @@ const navLinks = [
   { href: '#contact', label: 'Контакты' },
 ]
 
+// учитывает base из vite.config (GitHub Pages отдаёт сайт из /foren-jons/)
+const asset = path => `${import.meta.env.BASE_URL}${path}`
+
 const gallery = [
   {
-    src: '/media/bracelet-white.jpg',
+    src: asset('media/bracelet-white.jpg'),
     label: 'Общий вид',
     alt: 'Браслет Curb Link 925 из серебра на белом фоне',
   },
   {
-    src: '/media/bracelet-grey.jpg',
+    src: asset('media/bracelet-grey.jpg'),
     label: 'Свет и тень',
     alt: 'Браслет Curb Link 925 на сером фоне, контрастный свет',
   },
   {
-    src: '/media/chain-parts.png',
+    src: asset('media/chain-parts.png'),
     label: 'Звенья',
     alt: 'Разобранный браслет: отдельные звенья и замок-кольцо',
   },
@@ -149,8 +152,8 @@ function AssemblyFilm() {
         <video
           ref={videoRef}
           className="film-video"
-          src="/media/chain-motion.mp4"
-          poster="/media/chain-parts.png"
+          src={asset('media/chain-motion.mp4')}
+          poster={asset('media/chain-parts.png')}
           muted
           playsInline
           preload="auto"
@@ -404,7 +407,7 @@ export default function App() {
             <Reveal variant="mask" className="anatomy-figure">
               <div className="anatomy-frame">
                 <img
-                  src="/media/chain-parts.png"
+                  src={asset('media/chain-parts.png')}
                   alt="Разложенные детали браслета: звенья curb, замок-кольцо и соединительные кольца"
                   width={1312}
                   height={1199}
