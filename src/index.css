@@ -663,12 +663,110 @@ ol {
   overflow: hidden;
   background: var(--dark);
   aspect-ratio: 16 / 9;
+  cursor: grab;
+  touch-action: none;
 }
 
-.film__frame video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.film__frame:active {
+  cursor: grabbing;
+}
+
+.film__orbit {
+  position: absolute;
+  inset: 0;
+  transform: perspective(900px) rotateY(var(--drag, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 0.18s ease-out;
+}
+
+.film__chain {
+  position: absolute;
+  top: 4%;
+  left: 12%;
+  width: 76%;
+  height: 92%;
+  object-fit: contain;
+  transform-origin: center;
+  pointer-events: none;
+  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.35));
+}
+
+.film__chain--1 {
+  animation: chain-orbit-a 7s ease-in-out infinite alternate;
+}
+
+.film__chain--2 {
+  opacity: 0.72;
+  animation: chain-orbit-b 9s ease-in-out infinite alternate;
+}
+
+.film__chain--3 {
+  opacity: 0.48;
+  animation: chain-orbit-c 11s ease-in-out infinite alternate;
+}
+
+@keyframes chain-orbit-a {
+  from { transform: rotate(-12deg) translate3d(-5%, 2%, 0); }
+  to { transform: rotate(14deg) translate3d(6%, -3%, 0); }
+}
+
+@keyframes chain-orbit-b {
+  from { transform: rotate(18deg) translate3d(4%, -4%, 0); }
+  to { transform: rotate(-16deg) translate3d(-6%, 3%, 0); }
+}
+
+@keyframes chain-orbit-c {
+  from { transform: rotate(-24deg) translate3d(-2%, 4%, 0); }
+  to { transform: rotate(22deg) translate3d(3%, -5%, 0); }
+}
+
+.film__frame.is-paused .film__chain {
+  animation-play-state: paused;
+}
+
+.film__frame.is-explode .film__chain {
+  animation: none;
+}
+
+.film__frame.is-explode .film__chain--1 {
+  transform: translate(-34%, -8%) rotate(-32deg) scale(0.78);
+}
+
+.film__frame.is-explode .film__chain--2 {
+  opacity: 0.8;
+  transform: translate(32%, 4%) rotate(28deg) scale(0.82);
+}
+
+.film__frame.is-explode .film__chain--3 {
+  opacity: 0.62;
+  transform: translate(0, 24%) rotate(8deg) scale(0.7);
+}
+
+.film__frame.is-assemble .film__chain--1 {
+  animation: chain-assemble-a 1.6s var(--ease) both;
+}
+
+.film__frame.is-assemble .film__chain--2 {
+  animation: chain-assemble-b 1.6s var(--ease) both;
+}
+
+.film__frame.is-assemble .film__chain--3 {
+  animation: chain-assemble-c 1.6s var(--ease) both;
+}
+
+@keyframes chain-assemble-a {
+  from { transform: translate(-34%, -8%) rotate(-32deg) scale(0.78); }
+  to { transform: translate(0, 0) rotate(-6deg) scale(1); }
+}
+
+@keyframes chain-assemble-b {
+  from { opacity: 0.8; transform: translate(32%, 4%) rotate(28deg) scale(0.82); }
+  to { opacity: 0.72; transform: translate(0, 0) rotate(4deg) scale(1); }
+}
+
+@keyframes chain-assemble-c {
+  from { opacity: 0.62; transform: translate(0, 24%) rotate(8deg) scale(0.7); }
+  to { opacity: 0.48; transform: translate(0, 0) rotate(0) scale(1); }
 }
 
 .film__label {
@@ -678,32 +776,49 @@ ol {
   z-index: 2;
   font-size: 8px;
   letter-spacing: 0.2em;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.78);
 }
 
-.film__replay {
+.film__hint {
   position: absolute;
-  inset: 0;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  background: rgba(20, 20, 20, 0.55);
-  color: #fff;
-  font-size: 10px;
-  letter-spacing: 0.16em;
+  right: 14px;
+  bottom: 10px;
+  z-index: 2;
+  font-size: 8px;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  transition: background 0.35s var(--ease);
+  color: rgba(255, 255, 255, 0.62);
+  pointer-events: none;
 }
 
-.film__replay:hover {
-  background: rgba(20, 20, 20, 0.75);
+.film__controls {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-top: 10px;
 }
 
-.film__replay[hidden] {
-  display: none;
+.film__controls button {
+  padding: 9px 6px;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color 0.3s var(--ease), border-color 0.3s var(--ease), background 0.3s var(--ease);
+}
+
+.film__controls button:hover,
+.film__controls button[aria-pressed='true'] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .film__chain {
+    animation: none !important;
+  }
 }
 
 .hero__rule {

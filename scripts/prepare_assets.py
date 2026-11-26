@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Prepare full, background-free silver chain cutouts from the repository's own photos.
 
-The source images already ship with the project (public/media/*.jpg/png), so no
-third-party licence is introduced. The mask uses a soft alpha ramp plus a closing
+The source images ship with the project in scripts/sources/, so no
+third-party licence is introduced. Only transparent cutouts are published
+to public/media/. The mask uses a soft alpha ramp plus a closing
 pass: bright metal highlights stay inside the chain instead of being erased as
 "background", and the complete outline is kept with a generous margin.
 
@@ -16,11 +17,13 @@ from PIL import Image, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
 MEDIA = ROOT / "public" / "media"
+SOURCES_DIR = ROOT / "scripts" / "sources"
 
 SOURCES = [
     ("bracelet-white.jpg", "chain-01.png", None),
     ("bracelet-grey.jpg", "chain-02.png", None),
     ("chain-parts.png", "chain-03.png", None),
+    ("chain-source.webp", "chain-05.png", None),
 ]
 
 
@@ -78,7 +81,7 @@ def to_silver(array: np.ndarray, alpha: np.ndarray) -> np.ndarray:
 
 
 def prepare(source: str, target: str, crop: tuple[float, float, float, float] | None) -> None:
-    image = Image.open(MEDIA / source).convert("RGB")
+    image = Image.open(SOURCES_DIR / source).convert("RGB")
     array = np.asarray(image).astype(np.float32)
 
     background = estimate_background(array)
@@ -106,8 +109,9 @@ def prepare(source: str, target: str, crop: tuple[float, float, float, float] | 
     canvas[oy : oy + rgba.shape[0], ox : ox + rgba.shape[1]] = rgba
 
     cutout = Image.fromarray(canvas, "RGBA")
-    cutout.save(MEDIA / target, optimize=True)
-    cutout.save(MEDIA / target.with_suffix(".webp"), "WEBP", quality=88, method=6)
+    target_path = Path(target)
+    cutout.save(MEDIA / target_path, optimize=True)
+    cutout.save(MEDIA / target_path.with_suffix(".webp"), "WEBP", quality=88, method=6)
     print(
         f"{target}: {side}x{side}, object {int((alpha8 > 40).sum() * 100 / alpha8.size)}%, "
         f"margin {min(x0, y0, rgba.shape[1] - (x1 - x0), rgba.shape[0] - (y1 - y0))}px"

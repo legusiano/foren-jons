@@ -7,7 +7,6 @@ import {
   Check,
   Heart,
   Menu,
-  RotateCcw,
   ShoppingBag,
   X,
 } from 'lucide-react'
@@ -44,6 +43,11 @@ const gallery = [
     src: asset('media/chain-03.webp'),
     label: 'Звенья',
     alt: 'Отдельные звенья и замок цепи, без фона',
+  },
+  {
+    src: asset('media/chain-05.webp'),
+    label: 'Новая цепь',
+    alt: 'Серебряная цепь без фона, крупный план',
   },
 ]
 
@@ -221,56 +225,78 @@ function Words({ text, className = '', as: Tag = 'h2', delay = 0, ...props }) {
 }
 
 function AssemblyFilm() {
-  const videoRef = useRef(null)
-  const [reduced] = useState(
+  const [mode, setMode] = useState('rotate')
+  const [angle, setAngle] = useState(0)
+  const [paused, setPaused] = useState(
     () => window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false
   )
-  const [ready, setReady] = useState(reduced)
-  const [ended, setEnded] = useState(reduced)
+  const dragRef = useRef(null)
+  const chain = asset('media/chain-04.webp')
 
-  useEffect(() => {
-    if (reduced) return undefined
-    const el = videoRef.current
-    if (!el) return undefined
-    const play = el.play?.()
-    play?.catch?.(() => setEnded(true))
-    return undefined
-  }, [reduced])
+  const onPointerDown = event => {
+    dragRef.current = { x: event.clientX, angle }
+    event.currentTarget.setPointerCapture?.(event.pointerId)
+  }
 
-  const replay = () => {
-    const el = videoRef.current
-    if (!el) return
-    el.currentTime = 0
-    setEnded(false)
-    el.play?.().catch(() => setEnded(true))
+  const onPointerMove = event => {
+    if (!dragRef.current) return
+    setAngle(dragRef.current.angle + (event.clientX - dragRef.current.x) * 0.35)
+  }
+
+  const onPointerUp = () => {
+    dragRef.current = null
   }
 
   return (
     <div className="film">
-      <div className="film__frame">
-        <video
-          ref={videoRef}
-          src={asset('media/chain-motion.mp4')}
-          poster={asset('media/chain-03.webp')}
-          muted
-          playsInline
-          preload="metadata"
-          aria-label="Анимация сборки цепи из отдельных звеньев"
-          onCanPlay={() => setReady(true)}
-          onEnded={() => setEnded(true)}
+      <div
+        className={`film__frame is-${mode}${paused ? ' is-paused' : ''}`}
+        role="img"
+        aria-label="Три прозрачные копии цепи: вращение, разборка и сборка"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
+        <span className="film__label">VOREN JONS / 3 COPIES</span>
+        <div className="film__orbit" key={mode} style={{ '--drag': `${angle}deg` }}>
+          {[0, 1, 2].map(i => (
+            <img
+              key={i}
+              src={chain}
+              alt=""
+              aria-hidden="true"
+              draggable="false"
+              className={`film__chain film__chain--${i + 1}`}
+            />
+          ))}
+        </div>
+        <span className="film__hint">Перетащите, чтобы повернуть</span>
+      </div>
+      <div className="film__controls" role="group" aria-label="Управление анимацией цепи">
+        <button
+          type="button"
+          aria-pressed={mode === 'rotate'}
+          onClick={() => setMode('rotate')}
         >
-          <track
-            kind="captions"
-            src={asset('media/chain-motion.vtt')}
-            srcLang="ru"
-            label="Русский"
-            default
-          />
-        </video>
-        <span className="film__label">ДВИЖЕНИЕ · 00:02</span>
-        <button className="film__replay" type="button" onClick={replay} hidden={!ready || !ended}>
-          <RotateCcw size={13} aria-hidden="true" />
-          Повторить
+          Крутить
+        </button>
+        <button
+          type="button"
+          aria-pressed={mode === 'explode'}
+          onClick={() => setMode('explode')}
+        >
+          Разобрать
+        </button>
+        <button
+          type="button"
+          aria-pressed={mode === 'assemble'}
+          onClick={() => setMode('assemble')}
+        >
+          Собрать
+        </button>
+        <button type="button" aria-pressed={paused} onClick={() => setPaused(value => !value)}>
+          {paused ? 'Пуск' : 'Пауза'}
         </button>
       </div>
     </div>
