@@ -18,7 +18,7 @@ try {
   git config user.name 'legusiano'
   git config user.email 'legusiano@users.noreply.github.com'
   git add -A
-  git commit -m 'Deploy FOREN JONS' 2>&1 | Out-Null
+  git commit -m 'Deploy VOREN JONS' 2>&1 | Out-Null
   git remote add origin https://github.com/legusiano/foren-jons.git
   git push -f origin gh-pages
 } finally {

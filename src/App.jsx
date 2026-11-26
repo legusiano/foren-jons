@@ -1,70 +1,73 @@
 import { useEffect, useRef, useState } from 'react'
 import {
+  ArrowDown,
   ArrowRight,
-  BadgeCheck,
+  ArrowUp,
+  ArrowUpRight,
   Check,
-  Gem,
-  Mail,
-  MapPin,
-  Phone,
+  Heart,
+  Menu,
   RotateCcw,
-  ShieldCheck,
-  Sparkles,
-  Truck,
+  ShoppingBag,
+  X,
 } from 'lucide-react'
-import SplitText from './components/SplitText'
-import Reveal from './components/Reveal'
+import CartDrawer from './components/CartDrawer'
+import ChainStudy from './components/ChainStudy'
+import Lightbox from './components/Lightbox'
+import { useFocusTrap } from './lib/focusTrap'
+
+const asset = path => `${import.meta.env.BASE_URL}${path}`
 
 const navLinks = [
   { href: '#product', label: 'Коллекция' },
+  { href: '#craft', label: 'Мастерство' },
+  { href: '#study', label: 'Цепь' },
   { href: '#about', label: 'О бренде' },
-  { href: '#features', label: 'Гарантии' },
-  { href: '#contact', label: 'Контакты' },
+  { href: '#features', label: 'Условия' },
+  { href: '#contact', label: 'Подписка' },
 ]
 
-// учитывает base из vite.config (GitHub Pages отдаёт сайт из /foren-jons/)
-const asset = path => `${import.meta.env.BASE_URL}${path}`
-
+// Полные, не обрезанные цепи без фона. Вырезаны из собственных фотографий
+// репозитория скриптом scripts/prepare_assets.py — без сторонних лицензий.
 const gallery = [
   {
-    src: asset('media/bracelet-white.jpg'),
-    label: 'Общий вид',
-    alt: 'Браслет Curb Link 925 из серебра на белом фоне',
+    src: asset('media/chain-01.webp'),
+    label: 'Целая цепь',
+    alt: 'Полная серебряная цепь без фона, замкнутый контур',
   },
   {
-    src: asset('media/bracelet-grey.jpg'),
-    label: 'Свет и тень',
-    alt: 'Браслет Curb Link 925 на сером фоне, контрастный свет',
+    src: asset('media/chain-02.webp'),
+    label: 'Контраст',
+    alt: 'Та же цепь при контрастном освещении, без фона',
   },
   {
-    src: asset('media/chain-parts.png'),
+    src: asset('media/chain-03.webp'),
     label: 'Звенья',
-    alt: 'Разобранный браслет: отдельные звенья и замок-кольцо',
+    alt: 'Отдельные звенья и замок цепи, без фона',
   },
 ]
 
-const timeline = [
-  { year: '2008', text: "FOREN JON'S основан: первая мастерская и пять моделей цепи." },
-  { year: '2012', text: 'Коллекция Curb — фирменная форма плетения бренда.' },
-  { year: '2019', text: 'Родиевое покрытие: защита от потемнения на все изделия.' },
-  { year: '2026', text: 'Более 12 000 изделий, собранных вручную, и 24 месяца гарантии.' },
+const sizes = ['17', '18', '19', '20']
+const finishes = [
+  { id: 'polished', label: 'Полированный' },
+  { id: 'oxidised', label: 'Оксидированный' },
 ]
 
 const steps = [
   {
     num: '01',
     title: 'Ручная сборка',
-    text: 'Каждое звено соединяется вручную: натяжение, геометрия и посадка проверяются по шаблону.',
+    text: 'Звенья соединяются вручную: натяжение, геометрия и посадка проверяются по шаблону.',
   },
   {
     num: '02',
-    title: 'Холодный блеск',
-    text: 'Многоступенчатая полировка и родиевое покрытие дают серебристо-стальной тон без потемнения.',
+    title: 'Отделка',
+    text: 'Полировка формирует ровный серебристый тон. Состав покрытия уточняется продавцом.',
   },
   {
     num: '03',
-    title: 'Контроль пробы',
-    text: 'Каждая партия проходит пробирный контроль, а изделие получает индивидуальный сертификат.',
+    title: 'Документы',
+    text: 'Проба, вес и комплект документов подтверждаются продавцом до оформления покупки.',
   },
 ]
 
@@ -74,68 +77,163 @@ const anatomy = [
   { x: 46.5, y: 77, label: 'Пайка' },
 ]
 
-const features = [
+const timeline = [
+  { step: '01', text: 'Подбор звеньев и контроль геометрии.' },
+  { step: '02', text: 'Формирование плетения Curb.' },
+  { step: '03', text: 'Полировка и проверка отделки.' },
+  { step: '04', text: 'Интерактивная демонстрация изделия.' },
+]
+
+const assurances = [
   {
-    icon: Gem,
-    title: 'Серебро 925 пробы',
-    text: 'Стерлинговое серебро с гипоаллергенным составом — без никеля в контакте с кожей.',
+    title: 'Материал',
+    text: 'Серебро 925 пробы. Точные характеристики подтверждаются продавцом.',
   },
   {
-    icon: Sparkles,
-    title: 'Ручная полировка',
-    text: 'Родиевое покрытие сохраняет холодный блеск и защищает от потемнения.',
+    title: 'Отделка',
+    text: 'Вид полировки и покрытия уточняется для конкретного изделия.',
   },
   {
-    icon: ShieldCheck,
-    title: 'Гарантия 24 месяца',
-    text: 'Бесплатное обслуживание замков и соединений в течение двух лет.',
+    title: 'Документы',
+    text: 'Наличие паспорта или сертификата подтверждается до покупки.',
   },
   {
-    icon: BadgeCheck,
-    title: 'Сертификат подлинности',
-    text: 'Паспорт изделия с пробой, весом и номером партии в каждой коробке.',
+    title: 'Условия покупки',
+    text: 'Цена, доставка, гарантия и обмен согласовываются с продавцом.',
   },
   {
-    icon: Truck,
-    title: 'Доставка и обмен',
-    text: 'Доставка по России от одного дня, обмен размера в течение 14 дней.',
+    title: 'Личные данные',
+    text: 'Демонстрационная форма не отправляет адрес на сервер.',
   },
 ]
 
-const guarantees = [
-  { icon: ShieldCheck, label: 'Гарантия 24 мес.' },
-  { icon: BadgeCheck, label: 'Сертификат 925' },
-  { icon: Truck, label: 'Обмен 14 дней' },
-]
+// Юридический каркас для требований РФ. Это шаблон с явно обозначенными
+// незаполненными полями, а не готовое юридическое заключение.
+const TBD = '<span class="placeholder">указать</span>'
 
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(false)
+const legalDocs = {
+  privacy: {
+    title: 'Политика конфиденциальности',
+    body: [
+      'Демонстрационная версия: сайт не отправляет персональные данные на сервер, не использует cookie, аналитику и сторонние скрипты. Адрес, введённый в форму, хранится только в памяти страницы до перезагрузки.',
+      `Оператор персональных данных (для рабочей версии): ${TBD}. Реквизиты и адрес для обращений: ${TBD}.`,
+      'Состав данных: адрес электронной почты и содержание добровольно отправленного обращения. Специальные категории данные не запрашиваются.',
+      'Цели обработки: оформление подписки и ответы на обращения. Правовое основание — согласие субъекта (ст. 6, 21 Федерального закона № 152-ФЗ); для рабочих операций основание подтверждает владелец.',
+      `Сроки хранения: до отзыва согласия или достижения цели обработки. Конкретный срок для рабочей версии: ${TBD}.`,
+      `Передача третьим лицам не предусмотрена, кроме случаев, прямо установленных законодательством. Фактические получатели: ${TBD}.`,
+      'Субъект вправе запросить доступ, уточнение, удаление данных, отозвать согласие и обжаловать действия оператора в уполномоченный орган. Запрос направляется по адресу, указанному в сведениях об исполнителе.',
+      'Отзыв согласия не ухудшает доступ к сайту. Порядок отзыва в рабочей версии и адрес для него уточняются владельцем.',
+    ],
+  },
+  terms: {
+    title: 'Пользовательское соглашение',
+    body: [
+      'Информация на сайте носит справочный характер и не является публичной офертой. Цены, характеристики, сроки и условия сделки подтверждаются продавцом до оформления заказа.',
+      'Пользователь обязуется использовать сайт законно, не нарушать права третьих лиц и не мешать работе сайта.',
+      'Владелец публикует информацию по мере возможности, но не обещает её абсолютную актуальность; демонстрационные элементы корзины и подписки не создают договор.',
+      'Тексты, изображения и иные материалы сайта защищены авторским правом. Использование без разрешения правообладателя не допускается.',
+      `Условия могут изменяться; актуальная редакция размещается на сайте. Споры разрешаются в порядке, установленном законодательством РФ. Реквизиты продавца: ${TBD}.`,
+    ],
+  },
+  refund: {
+    title: 'Возврат и обмен',
+    body: [
+      'Демонстрационная версия сайта не принимает оплату и не оформляет заказы.',
+      `Для рабочей версии порядок возврата и обмена определяется Законом РФ «О защите прав потребителей» и договором. Конкретные сроки рассмотрения обращений и способ возврата денежных средств: ${TBD}.`,
+      'Покупатель должен видеть цену товара, возможные комиссии и итоговую сумму до подтверждения оплаты.',
+      `Основания и ограничения, если они предусмотрены законом и договором, указываются продавцом: ${TBD}. Не устанавливаются ограничения, противоречащие законодательству.`,
+      `Обращение по возврату направляется по адресу: ${TBD}.`,
+    ],
+  },
+  cookies: {
+    title: 'Файлы cookie и технологии',
+    body: [
+      'Сайт не использует файлы cookie, localStorage/sessionStorage, счётчики посещений, пиксели и сторонние аналитические сервисы.',
+      'Шрифты и изображения загружаются с этого же сайта, поэтому сторонние поставщики не получают запросы посетителей.',
+      'Технически необходимые cookie не создаются. Хостинг может вести собственные технические логи; их состав и сроки хранения уточняются владельцем.',
+      `Если будут подключены необязательные технологии, до их запуска будет запрошено согласие без заранее отмеченных галочек, с возможностью отказа и изменения решения. Адрес для отзыва: ${TBD}.`,
+    ],
+  },
+  seller: {
+    title: 'Сведения об исполнителе',
+    body: [
+      `Наименование: ${TBD}`,
+      `ИНН / ОГРНИП: ${TBD}`,
+      `Юридический адрес: ${TBD}`,
+      `Телефон: ${TBD}`,
+      `E-mail: ${TBD}`,
+      `Режим работы: ${TBD}`,
+      'До заполнения реквизитов сайт является демонстрационным и не предлагает заключить договор.',
+    ],
+  },
+  delete: {
+    title: 'Запрос на удаление данных',
+    body: [
+      'В демонстрационной версии адрес электронной почты не отправляется на сервер и не сохраняется в браузере после перезагрузки, поэтому удалять нечего. Кнопка имитации удаления не добавлена намеренно.',
+      `В рабочей версии запрос направляется по адресу: ${TBD}. Для защиты прав субъекта может потребоваться подтверждение личности по контактным данным, указанным при подписке.`,
+      `Срок обработки запроса, перечень систем и резервных копий, обязательные сроки хранения: ${TBD}.`,
+      'Удаление производится после проверки основания и личности заявителя; мотивированный отказ направляется в установленный законом срок.',
+    ],
+  },
+}
+
+function useScrollReveal() {
   useEffect(() => {
-    const mq = window.matchMedia?.('(prefers-reduced-motion: reduce)')
-    if (!mq) return undefined
-    const apply = () => setReduced(mq.matches)
-    apply()
-    mq.addEventListener('change', apply)
-    return () => mq.removeEventListener('change', apply)
+    const nodes = Array.from(document.querySelectorAll('[data-reveal]'))
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
+
+    if (reduced || typeof IntersectionObserver === 'undefined') {
+      nodes.forEach(node => node.classList.add('is-in'))
+      return undefined
+    }
+
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return
+          entry.target.classList.add('is-in')
+          observer.unobserve(entry.target)
+        })
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -6% 0px' }
+    )
+
+    nodes.forEach(node => observer.observe(node))
+    return () => observer.disconnect()
   }, [])
-  return reduced
+}
+
+function Words({ text, className = '', as: Tag = 'h2', delay = 0, ...props }) {
+  const words = text.split(' ')
+  return (
+    <Tag
+      {...props}
+      className={`words ${className}`.trim()}
+      style={{ '--word-delay': `${delay}s` }}
+    >
+      {words.map((word, i) => (
+        <span className="words__item" key={`${word}-${i}`} style={{ '--i': i }}>
+          <span>{word}</span>
+        </span>
+      ))}
+    </Tag>
+  )
 }
 
 function AssemblyFilm() {
-  const reduced = useReducedMotion()
   const videoRef = useRef(null)
-  const [playing, setPlaying] = useState(false)
-  const [ready, setReady] = useState(false)
+  const [reduced] = useState(
+    () => window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false
+  )
+  const [ready, setReady] = useState(reduced)
+  const [ended, setEnded] = useState(reduced)
 
   useEffect(() => {
+    if (reduced) return undefined
     const el = videoRef.current
     if (!el) return undefined
-    if (reduced) {
-      el.pause()
-      return undefined
-    }
     const play = el.play?.()
-    if (play?.catch) play.catch(() => setPlaying(false))
+    play?.catch?.(() => setEnded(true))
     return undefined
   }, [reduced])
 
@@ -143,496 +241,704 @@ function AssemblyFilm() {
     const el = videoRef.current
     if (!el) return
     el.currentTime = 0
-    el.play?.().catch(() => {})
+    setEnded(false)
+    el.play?.().catch(() => setEnded(true))
   }
 
   return (
-    <figure className="film">
-      <div className="film-frame">
+    <div className="film">
+      <div className="film__frame">
         <video
           ref={videoRef}
-          className="film-video"
           src={asset('media/chain-motion.mp4')}
-          poster={asset('media/chain-parts.png')}
+          poster={asset('media/chain-03.webp')}
           muted
           playsInline
-          preload="auto"
-          aria-label="Анимация: браслет собирается из отдельных звеньев"
-          onPlay={() => setPlaying(true)}
-          onPause={() => setPlaying(false)}
-          onEnded={() => setPlaying(false)}
+          preload="metadata"
+          aria-label="Анимация сборки цепи из отдельных звеньев"
           onCanPlay={() => setReady(true)}
-        />
-        <span className={`film-badge${ready ? ' is-ready' : ''}`} aria-hidden="true">
-          925 · MOV
-        </span>
-        <button
-          className={`film-replay${playing ? ' is-hidden' : ''}`}
-          type="button"
-          onClick={replay}
+          onEnded={() => setEnded(true)}
         >
-          <RotateCcw size={14} aria-hidden="true" />
-          Повторить сборку
+          <track
+            kind="captions"
+            src={asset('media/chain-motion.vtt')}
+            srcLang="ru"
+            label="Русский"
+            default
+          />
+        </video>
+        <span className="film__label">ДВИЖЕНИЕ · 00:02</span>
+        <button className="film__replay" type="button" onClick={replay} hidden={!ready || !ended}>
+          <RotateCcw size={13} aria-hidden="true" />
+          Повторить
         </button>
       </div>
-      <figcaption>
-        <span>Сборка браслета</span>
-        <span>00:02 · 24 звена</span>
-      </figcaption>
-    </figure>
+    </div>
   )
 }
 
 export default function App() {
+  useScrollReveal()
+
+  const [shot, setShot] = useState(0)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [cartItems, setCartItems] = useState([])
+  const [cartOpen, setCartOpen] = useState(false)
   const [toast, setToast] = useState('')
   const [subscribed, setSubscribed] = useState(false)
-  const [shot, setShot] = useState(0)
+  const [email, setEmail] = useState('')
+  const [dataConsent, setDataConsent] = useState(false)
+  const [mailConsent, setMailConsent] = useState(false)
+  const [legalOpen, setLegalOpen] = useState(null)
+  const [lightbox, setLightbox] = useState(null)
+  const [size, setSize] = useState('19')
+  const [finish, setFinish] = useState('polished')
+  const [wishlist, setWishlist] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const [showTop, setShowTop] = useState(false)
+
+  const legalPanelRef = useRef(null)
+  const legalCloseRef = useRef(null)
+  useFocusTrap(Boolean(legalOpen), legalPanelRef, legalCloseRef)
+
+  const cartCount = cartItems.reduce((sum, item) => sum + item.qty, 0)
 
   useEffect(() => {
     if (!toast) return undefined
-    const id = setTimeout(() => setToast(''), 2600)
-    return () => clearTimeout(id)
+    const id = window.setTimeout(() => setToast(''), 2800)
+    return () => window.clearTimeout(id)
   }, [toast])
 
-  const addToCart = () => setToast('Curb Link 925 добавлен в корзину')
+  useEffect(() => {
+    const onKeyDown = event => {
+      if (event.key !== 'Escape') return
+      setMenuOpen(false)
+      setLegalOpen(null)
+      setCartOpen(false)
+      setLightbox(null)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [])
+
+  useEffect(() => {
+    const locked = menuOpen || Boolean(legalOpen) || cartOpen || lightbox !== null
+    document.body.classList.toggle('menu-open', locked)
+    return () => document.body.classList.remove('menu-open')
+  }, [menuOpen, legalOpen, cartOpen, lightbox])
+
+  useEffect(() => {
+    const onScroll = () => {
+      const max = document.documentElement.scrollHeight - window.innerHeight
+      setProgress(max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0)
+      setShowTop(window.scrollY > window.innerHeight * 0.9)
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  const addToCart = () => {
+    const id = `${size}-${finish}`
+    setCartItems(items => {
+      const existing = items.find(item => item.id === id)
+      if (existing) {
+        return items.map(item =>
+          item.id === id ? { ...item, qty: item.qty + 1 } : item
+        )
+      }
+      return [
+        ...items,
+        {
+          id,
+          title: 'Curb Link 925',
+          size,
+          finish: finishes.find(item => item.id === finish)?.label ?? '',
+          price: 14900,
+          qty: 1,
+        },
+      ]
+    })
+    setToast(`Curb Link 925 · ${size} см добавлен в корзину`)
+  }
+
+  const changeQty = (id, delta) => {
+    setCartItems(items =>
+      items
+        .map(item => (item.id === id ? { ...item, qty: item.qty + delta } : item))
+        .filter(item => item.qty > 0)
+    )
+  }
+
+  const stepLightbox = delta => {
+    setLightbox(value =>
+      value === null ? value : (value + delta + gallery.length) % gallery.length
+    )
+  }
+
+  useEffect(() => {
+    if (lightbox === null) return undefined
+    const onKeyDown = event => {
+      if (event.key === 'ArrowRight') stepLightbox(1)
+      if (event.key === 'ArrowLeft') stepLightbox(-1)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [lightbox])
 
   return (
     <>
+      <a className="skip-link" href="#main">
+        Перейти к содержимому
+      </a>
+
+      <div
+        className="scroll-progress"
+        aria-hidden="true"
+        style={{ transform: `scaleX(${progress / 100})` }}
+      />
+
       <header className="site-header">
-        <div className="container">
-          <a className="brand" href="#top">
-            FOREN <span>JON'S</span>
+        <div className="container site-header__inner">
+          <a className="brand" href="#top" onClick={() => setMenuOpen(false)}>
+            VOREN <span>JONS</span>
           </a>
-          <nav className="nav" aria-label="Основная навигация">
+
+          <nav className="site-nav" aria-label="Основная навигация">
             {navLinks.map(link => (
               <a key={link.href} href={link.href}>
                 {link.label}
               </a>
             ))}
-            <a className="nav-cta" href="#product">
-              К покупке
-            </a>
           </nav>
+
+          <div className="header-actions">
+            <button
+              className="cart-count"
+              type="button"
+              onClick={() => setCartOpen(true)}
+              aria-label={`Корзина, товаров: ${cartCount}`}
+            >
+              <ShoppingBag size={15} aria-hidden="true" />
+              Корзина {cartCount > 0 && <b>{cartCount}</b>}
+            </button>
+            <button
+              className="menu-toggle"
+              type="button"
+              aria-expanded={menuOpen}
+              aria-controls="mobile-menu"
+              aria-label={menuOpen ? 'Закрыть меню' : 'Открыть меню'}
+              onClick={() => setMenuOpen(value => !value)}
+            >
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
         </div>
       </header>
 
-      <main id="top">
-        {/* ============ HERO ============ */}
-        <section className="hero" aria-labelledby="hero-title">
-          <div className="container hero-grid">
-            <div className="hero-copy">
-              <p className="eyebrow">Серебро 925 · с 2008 года</p>
+      <div
+        id="mobile-menu"
+        className={`mobile-menu${menuOpen ? ' is-open' : ''}`}
+        aria-hidden={!menuOpen}
+      >
+        <nav aria-label="Мобильная навигация">
+          {navLinks.map((link, i) => (
+            <a
+              key={link.href}
+              href={link.href}
+              style={{ '--i': i }}
+              onClick={() => setMenuOpen(false)}
+            >
+              <span>{String(i + 1).padStart(2, '0')}</span>
+              {link.label}
+            </a>
+          ))}
+        </nav>
+        <p className="mobile-menu__foot">Серебряные цепи · демонстрационный проект</p>
+      </div>
 
-              <h1 className="hero-title" id="hero-title">
-                FOREN <em>JON'S</em>
+      <main id="main">
+        <section className="hero" id="top" aria-labelledby="hero-title">
+          <div className="container hero__layout">
+            <div className="hero__copy" data-reveal>
+              <p className="index-label">01 / Серебряные цепи · коллекция Curb</p>
+              <h1 className="hero__title" id="hero-title">
+                <span>VOREN</span>
+                <span className="hero__title-line">JONS<i>.</i></span>
               </h1>
-
-              <div className="dim-line" aria-hidden="true">
-                <span />
-                <p>19 см · родий · ручная сборка</p>
-                <span />
-              </div>
-
-              <p className="hero-slogan">Серебро, которое чувствуешь</p>
-
-              <p className="hero-text">
-                Браслеты из стерлингового серебра, создаваемые вручную. Соединяем
-                скандинавскую сдержанность с точностью ювелирной инженерии — форма без
-                лишнего, характер без компромиссов.
+              <p className="hero__kicker">Серебро, которое чувствуешь</p>
+              <p className="hero__body">
+                Исследование формы серебряной цепи: ровная линия звеньев,
+                сдержанная отделка и точность деталей — без лишнего.
               </p>
-
-              <div className="hero-actions">
-                <a className="btn btn-primary" href="#product">
+              <div className="hero__actions">
+                <a className="button button--dark" href="#product">
                   Смотреть коллекцию
+                  <ArrowUpRight size={16} aria-hidden="true" />
+                </a>
+                <a className="button button--text" href="#about">
+                  История бренда
                   <ArrowRight size={15} aria-hidden="true" />
                 </a>
-                <a className="btn btn-ghost" href="#about">
-                  О бренде
-                </a>
               </div>
-
-              <div className="hero-meta">
-                <div>
-                  <strong>925</strong>
-                  <span>проба серебра</span>
-                </div>
-                <div>
-                  <strong>2008</strong>
-                  <span>год основания</span>
-                </div>
-                <div>
-                  <strong>24 мес</strong>
-                  <span>гарантия</span>
-                </div>
-              </div>
+              <a className="hero__scroll" href="#product">
+                <ArrowDown size={14} aria-hidden="true" />
+                Листайте вниз
+              </a>
             </div>
 
-            <AssemblyFilm />
+            <div className="hero__visual" data-reveal style={{ '--i': 1 }}>
+              <div className="hero__figure">
+                <img
+                  src={gallery[0].src}
+                  alt="Серебряный браслет Curb Link 925"
+                  width="1000"
+                  height="1000"
+                  fetchPriority="high"
+                />
+                <span className="hero__figure-index">CURB LINK / 01</span>
+                <span className="hero__figure-note">Родий · 19 см · 32 г</span>
+              </div>
+              <AssemblyFilm />
+            </div>
           </div>
 
           <div className="container">
-            <Reveal as="hr" variant="line" className="hairline" />
+            <div className="hero__rule" data-reveal data-reveal-variant="line" />
           </div>
         </section>
 
-        {/* ============ ПРОДУКТ ============ */}
+        <div className="statement">
+          <div className="container statement__inner">
+            <span>Форма без лишнего</span>
+            <span className="statement__dot" aria-hidden="true" />
+            <span>Ручная сборка</span>
+            <span className="statement__dot" aria-hidden="true" />
+            <span>Серебро 925</span>
+          </div>
+        </div>
+
         <section className="section product" id="product" aria-labelledby="product-title">
-          <div className="container product-grid">
-            <div className="product-media">
-              <div className="gallery-frame">
+          <div className="container product__layout">
+            <div className="product__gallery" data-reveal>
+              <div className="product__stage">
                 <img
                   key={gallery[shot].src}
-                  className="gallery-image"
+                  className={finish === 'oxidised' ? 'is-oxidised' : ''}
                   src={gallery[shot].src}
                   alt={gallery[shot].alt}
-                  width={1000}
-                  height={1000}
+                  width="1000"
+                  height="1000"
                   loading="lazy"
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Открыть большой просмотр"
+                  onClick={() => setLightbox(shot)}
+                  onKeyDown={event => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      setLightbox(shot)
+                    }
+                  }}
                 />
-                <span className="gallery-count" aria-hidden="true">
+                <span className="product__counter">
                   {String(shot + 1).padStart(2, '0')} / {String(gallery.length).padStart(2, '0')}
                 </span>
               </div>
-
-              <div className="gallery-thumbs" role="group" aria-label="Ракурсы изделия">
+              <div className="gallery-nav" role="group" aria-label="Ракурсы изделия">
                 {gallery.map((item, i) => (
                   <button
                     key={item.src}
+                    className={`gallery-nav__item${i === shot ? ' is-active' : ''}`}
                     type="button"
-                    className={`thumb${i === shot ? ' is-active' : ''}`}
                     aria-pressed={i === shot}
                     onClick={() => setShot(i)}
                   >
-                    <img src={item.src} alt="" width={120} height={120} loading="lazy" />
+                    <span className="gallery-nav__num">{String(i + 1).padStart(2, '0')}</span>
                     <span>{item.label}</span>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="product-info">
-              <Reveal as="p" className="eyebrow">
-                Коллекция 01 · плетение curb
-              </Reveal>
-
-              <Reveal as="h2" className="product-name" id="product-title" delay={0.06}>
-                Curb Link 925
-              </Reveal>
-
-              <Reveal className="section-lead" variant="blur" delay={0.12}>
-                Плотное плетение из плоских звеньев ложится на запястье без зазоров.
-                Каждое звено паяется и полируется вручную, поэтому линия остаётся ровной
-                на всей длине.
-              </Reveal>
-
-              <Reveal className="price-row" delay={0.18}>
-                <span className="price">14 900 ₽</span>
-                <span className="price-note">в наличии · доставка от 1 дня</span>
-              </Reveal>
-
-              <Reveal delay={0.24} variant="mask">
-                <dl className="spec-list">
-                  <div>
-                    <dt>Материал</dt>
-                    <dd>Серебро 925 пробы</dd>
-                  </div>
-                  <div>
-                    <dt>Покрытие</dt>
-                    <dd>Родий, ручная полировка</dd>
-                  </div>
-                  <div>
-                    <dt>Длина</dt>
-                    <dd>19 см + 2 см удлинитель</dd>
-                  </div>
-                  <div>
-                    <dt>Вес</dt>
-                    <dd>32 г</dd>
-                  </div>
-                  <div>
-                    <dt>Замок</dt>
-                    <dd>Карабин-кольцо</dd>
-                  </div>
-                </dl>
-              </Reveal>
-
-              <Reveal className="product-actions" delay={0.3}>
-                <button className="btn btn-primary" type="button" onClick={addToCart}>
-                  Добавить в корзину
+            <div className="product__detail">
+              <p className="index-label" data-reveal>
+                Коллекция 01 — плетение curb
+              </p>
+              <div className="product__title-row" data-reveal>
+                <Words
+                  as="h2"
+                  id="product-title"
+                  className="product__title"
+                  text="Curb Link 925"
+                  delay={0.05}
+                />
+                <button
+                  className={`wishlist${wishlist ? ' is-on' : ''}`}
+                  type="button"
+                  aria-pressed={wishlist}
+                  aria-label={wishlist ? 'Убрать из избранного' : 'В избранное'}
+                  onClick={() => {
+                    setWishlist(value => !value)
+                    setToast(wishlist ? 'Убрано из избранного' : 'Добавлено в избранное')
+                  }}
+                >
+                  <Heart size={18} aria-hidden="true" />
                 </button>
-                <a className="btn btn-ghost" href="#contact">
-                  Написать консультанту
-                </a>
-              </Reveal>
+              </div>
+              <p className="product__lead" data-reveal>
+                Плотное плетение из плоских звеньев ложится на запястье без зазоров.
+                Каждое звено паяется и полируется вручную — линия остаётся ровной
+                на всей длине.
+              </p>
 
-              <Reveal className="guarantees" variant="left" delay={0.36}>
-                {guarantees.map(item => (
-                  <div key={item.label}>
-                    <item.icon size={16} aria-hidden="true" />
-                    <span>{item.label}</span>
+              <div className="product__price" data-reveal>
+                <strong>14 900 ₽</strong>
+                <span>наличие и доставка уточняются продавцом</span>
+              </div>
+              <p className="product__disclaimer" data-reveal>
+                Цена и условия приведены для примера и не являются публичной офертой.
+              </p>
+
+              <div className="options" data-reveal>
+                <div className="options__group">
+                  <span className="options__label">Длина</span>
+                  <div className="options__row" role="group" aria-label="Длина браслета">
+                    {sizes.map(item => (
+                      <button
+                        key={item}
+                        type="button"
+                        className={size === item ? 'is-active' : ''}
+                        aria-pressed={size === item}
+                        onClick={() => setSize(item)}
+                      >
+                        {item} см
+                      </button>
+                    ))}
                   </div>
-                ))}
-              </Reveal>
+                </div>
+                <div className="options__group">
+                  <span className="options__label">Отделка</span>
+                  <div className="options__row" role="group" aria-label="Отделка поверхности">
+                    {finishes.map(item => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={finish === item.id ? 'is-active' : ''}
+                        aria-pressed={finish === item.id}
+                        onClick={() => setFinish(item.id)}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <dl className="specs" data-reveal>
+                <div>
+                  <dt>Материал</dt>
+                  <dd>Серебро 925 пробы</dd>
+                </div>
+                <div>
+                  <dt>Покрытие</dt>
+                  <dd>Уточняется продавцом</dd>
+                </div>
+                <div>
+                  <dt>Длина</dt>
+                  <dd>19 см + 2 см удлинитель</dd>
+                </div>
+                <div>
+                  <dt>Вес</dt>
+                  <dd>32 г (пример)</dd>
+                </div>
+                <div>
+                  <dt>Замок</dt>
+                  <dd>Карабин-кольцо</dd>
+                </div>
+              </dl>
+
+              <div className="accordion" data-reveal>
+                <button
+                  type="button"
+                  aria-expanded={detailsOpen}
+                  onClick={() => setDetailsOpen(value => !value)}
+                >
+                  Состав и уход
+                  <span aria-hidden="true">{detailsOpen ? '−' : '+'}</span>
+                </button>
+                {detailsOpen && (
+                  <div className="accordion__body">
+                    <p>
+                      Хранить отдельно от других украшений, в сухом месте. Контакт
+                      с водой, косметикой и бытовой химией сокращает срок блеска.
+                      Протирать мягкой салфеткой после носки.
+                    </p>
+                    <p>
+                      Условия гарантии и обмена уточняются у продавца до покупки.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="product__actions" data-reveal>
+                <button className="button button--dark" type="button" onClick={addToCart}>
+                  Добавить в корзину
+                  <ArrowUpRight size={16} aria-hidden="true" />
+                </button>
+                <button
+                  className="button button--text"
+                  type="button"
+                  onClick={() => setLegalOpen('refund')}
+                >
+                  Условия возврата
+                </button>
+              </div>
+
+              <ul className="product__trust" data-reveal>
+                <li>Параметры — по запросу</li>
+                <li>Документы — до покупки</li>
+                <li>Условия — у продавца</li>
+              </ul>
             </div>
           </div>
         </section>
 
-        {/* ============ АНАТОМИЯ / СБОРКА ============ */}
-        <section className="section anatomy" id="anatomy" aria-labelledby="anatomy-title">
+        <section className="section craft" id="craft" aria-labelledby="craft-title">
           <div className="container">
-            <div className="anatomy-head">
-              <Reveal as="p" className="eyebrow">
-                Анатомия изделия
-              </Reveal>
-
-              <div id="anatomy-title" style={{ marginTop: '18px' }}>
-                <SplitText
-                  text="Точность в каждой детали"
-                  tag="h2"
-                  className="section-title"
-                  splitType="words"
-                  effect="rise"
-                  textAlign="left"
-                  delay={70}
-                  duration={1}
-                  threshold={0.25}
-                />
-              </div>
-
-              <Reveal className="section-lead" variant="blur" delay={0.1}>
-                Браслет собирается по частям: звенья, замок и пайка. Мы показываем изнанку
-                работы, потому что именно она держит форму.
-              </Reveal>
+            <div className="section-head" data-reveal>
+              <p className="index-label">02 / Анатомия изделия</p>
+              <Words as="h2" id="craft-title" text="Точность в каждой детали" />
+              <p className="section-head__lead">
+                Мы показываем изнанку работы: звенья, замок и пайка. Именно она
+                держит форму и задаёт характер изделия.
+              </p>
             </div>
 
-            <Reveal variant="mask" className="anatomy-figure">
-              <div className="anatomy-frame">
+            <div className="craft__layout">
+              <div className="craft__figure" data-reveal>
                 <img
-                  src={asset('media/chain-parts.png')}
-                  alt="Разложенные детали браслета: звенья curb, замок-кольцо и соединительные кольца"
-                  width={1312}
-                  height={1199}
+                  src={asset('media/chain-03.webp')}
+                  alt="Разложенные детали браслета: звенья curb, замок-кольцо и кольца"
+                  width="1312"
+                  height="1312"
                   loading="lazy"
                 />
                 {anatomy.map((item, i) => (
                   <span
                     key={item.label}
-                    className="anatomy-mark"
-                    style={{ left: `${item.x}%`, top: `${item.y}%`, '--d': `${i * 0.12}s` }}
+                    className="craft__mark"
+                    style={{ left: `${item.x}%`, top: `${item.y}%`, '--i': i }}
                   >
                     <i>{String(i + 1).padStart(2, '0')}</i>
                     <b>{item.label}</b>
                   </span>
                 ))}
               </div>
-            </Reveal>
 
-            <div className="assembly-grid">
-              {steps.map((step, i) => (
-                <Reveal
-                  as="article"
-                  className="assembly-card"
-                  key={step.num}
-                  delay={i * 0.12}
-                >
-                  <span className="num">{step.num}</span>
-                  <h3>{step.title}</h3>
-                  <p>{step.text}</p>
-                </Reveal>
-              ))}
+              <div className="craft__steps">
+                {steps.map(step => (
+                  <article className="craft-step" key={step.num} data-reveal>
+                    <span className="craft-step__num">{step.num}</span>
+                    <div>
+                      <h3>{step.title}</h3>
+                      <p>{step.text}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ============ О БРЕНДЕ ============ */}
-        <section className="section" id="about" aria-labelledby="about-title">
-          <div className="container">
-            <div className="about-grid">
-              <div>
-                <Reveal as="p" className="eyebrow">
-                  О бренде
-                </Reveal>
-                <div id="about-title" style={{ marginTop: '18px' }}>
-                  <SplitText
-                    text="Мастерская, а не фабрика"
-                    tag="h2"
-                    className="section-title"
-                    splitType="words"
-                    effect="blur"
-                    textAlign="left"
-                    delay={60}
-                    duration={1}
-                    threshold={0.2}
-                  />
-                </div>
-              </div>
+        <ChainStudy />
 
-              <div className="about-copy">
-                <Reveal as="p" className="big" variant="blur" delay={0.05}>
-                  FOREN JON'S основан в 2008 году. Мы верим, что украшение — не аксессуар,
-                  а продолжение человека.
-                </Reveal>
-                <Reveal as="p" className="section-lead" delay={0.12}>
-                  Каждый браслет создаётся вручную из стерлингового серебра 925 пробы.
-                  Соединяем скандинавскую сдержанность с точностью ювелирной инженерии.
-                  Форма без лишнего, характер без компромиссов.
-                </Reveal>
-                <Reveal as="p" className="section-lead" variant="left" delay={0.18}>
-                  Небольшая мастерская, ограниченные партии и контроль каждой партии пробирным
-                  надзором — так мы сохраняем качество, которое чувствуется с первого касания.
-                </Reveal>
-              </div>
+        <section className="section story" id="about" aria-labelledby="about-title">
+          <div className="container story__layout">
+            <div data-reveal>
+              <p className="index-label index-label--light">04 / О бренде</p>
+              <Words
+                as="h2"
+                id="about-title"
+                text="Мастерская, а не фабрика"
+                className="story__title"
+              />
             </div>
+            <div className="story__body" data-reveal>
+              <p className="story__lead">
+                Это демонстрация подхода: украшение — не аксессуар, а продолжение
+                человека.
+              </p>
+              <p>
+                Визуальный язык построен на естественном блеске серебра, ровной линии звеньев
+                и сдержанной отделке. Параметры конкретного изделия уточняются
+                продавцом.
+              </p>
+              <p>
+                Форма без лишнего. Никаких обещаний, которые нельзя подтвердить
+                документами до покупки.
+              </p>
+            </div>
+          </div>
 
-            <div className="timeline" aria-label="История бренда">
+          <div className="container">
+            <ol className="timeline" aria-label="Этапы работы с изделием">
               {timeline.map((item, i) => (
-                <Reveal key={item.year} variant="pop" delay={i * 0.1}>
-                  <span className="year">{item.year}</span>
+                <li className="timeline__item" key={item.step} data-reveal style={{ '--i': i }}>
+                  <span className="timeline__year">{item.step}</span>
                   <p>{item.text}</p>
-                </Reveal>
+                </li>
               ))}
-            </div>
+            </ol>
           </div>
         </section>
 
-        {/* ============ СЕРЕБРЯНОЕ ПОЛЕ ============ */}
-        <section className="silver-field" aria-label="Манифест бренда">
-          <div className="container">
-            <SplitText
-              text="Форма без лишнего"
-              tag="p"
-              className="quote"
-              splitType="words"
-              effect="wave"
-              staggerFrom="center"
-              textAlign="center"
-              delay={70}
-              duration={1.1}
-              threshold={0.3}
-            />
-            <Reveal as="p" className="attrib" delay={0.15}>
-              FOREN JON'S · Scandinavian silver · с 2008
-            </Reveal>
+        <section className="manifesto" aria-label="Манифест бренда">
+          <div className="container manifesto__inner" data-reveal>
+            <span className="manifesto__rule" />
+            <p>Форма без лишнего</p>
+            <span className="manifesto__caption">VOREN JONS · Silver study · Demo</span>
           </div>
         </section>
 
-        {/* ============ ХАРАКТЕРИСТИКИ ============ */}
-        <section className="section" id="features" aria-labelledby="features-title">
+        <section className="section assurances" id="features" aria-labelledby="features-title">
           <div className="container">
-            <div className="features-head">
-              <Reveal as="p" className="eyebrow">
-                Характеристики и защита
-              </Reveal>
-              <div id="features-title">
-                <SplitText
-                  text="Всё, что должно быть"
-                  tag="h2"
-                  className="section-title"
-                  splitType="words, chars"
-                  effect="skew"
-                  textAlign="left"
-                  delay={55}
-                  duration={0.95}
-                  threshold={0.2}
-                />
-              </div>
-              <Reveal className="section-lead" variant="blur" delay={0.1}>
-                Материал, покрытие, гарантия и документы — без мелкого шрифта.
-              </Reveal>
+            <div className="section-head" data-reveal>
+              <p className="index-label">05 / Защита и документы</p>
+              <Words as="h2" id="features-title" text="Всё, что должно быть" />
+              <p className="section-head__lead">
+                Материал, покрытие, гарантия и документы — без мелкого шрифта
+                и лишних обещаний.
+              </p>
             </div>
 
-            <div className="features-grid">
-              {features.map((item, i) => (
-                <Reveal
-                  as="article"
-                  className="feature-card"
-                  key={item.title}
-                  delay={(i % 4) * 0.08}
-                >
-                  <span className="feature-icon">
-                    <item.icon size={18} strokeWidth={1.4} aria-hidden="true" />
-                  </span>
+            <div className="assurance-list">
+              {assurances.map((item, i) => (
+                <article className="assurance" key={item.title} data-reveal style={{ '--i': i }}>
+                  <span className="assurance__num">{String(i + 1).padStart(2, '0')}</span>
                   <h3>{item.title}</h3>
                   <p>{item.text}</p>
-                </Reveal>
+                  <ArrowUpRight size={16} aria-hidden="true" />
+                </article>
               ))}
             </div>
           </div>
         </section>
 
-        {/* ============ ФИНАЛЬНЫЙ CTA ============ */}
         <section className="section closing" id="contact" aria-labelledby="closing-title">
-          <div className="container closing-grid">
-            <div>
-              <Reveal as="p" className="eyebrow" style={{ color: '#8a8f97' }}>
-                Начните с одной детали
-              </Reveal>
-              <div id="closing-title" style={{ marginTop: '16px' }}>
-                <SplitText
-                  text="Браслет, который остаётся"
-                  tag="h2"
-                  className="section-title"
-                  splitType="words"
-                  effect="pop"
-                  textAlign="left"
-                  delay={60}
-                  duration={1}
-                  threshold={0.2}
-                />
-              </div>
-              <Reveal as="p" className="lead" variant="left" delay={0.12}>
-                Новости коллекций, дропы и закрытые показы — редко и по делу. Подписка
-                необязательна и отменяется в один клик.
-              </Reveal>
+          <div className="container closing__layout">
+            <div data-reveal>
+              <p className="index-label index-label--light">06 / Остаться на связи</p>
+              <Words as="h2" id="closing-title" text="Браслет, который остаётся" />
+              <p className="closing__lead">
+                Новости коллекций и показы — редко и по делу. Форма
+                демонстрационная: адрес никуда не отправляется.
+              </p>
             </div>
 
-            <Reveal delay={0.16}>
-              <form
-                className="subscribe"
-                onSubmit={event => {
-                  event.preventDefault()
-                  setSubscribed(true)
-                }}
-              >
-                <label htmlFor="email">Подписка на новости</label>
-                <div className="subscribe-row">
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    required
-                    placeholder="ваша@почта.ru"
-                    autoComplete="email"
-                  />
-                  <button className="btn btn-light" type="submit">
-                    {subscribed ? <Check size={15} aria-hidden="true" /> : null}
-                    {subscribed ? 'Готово' : 'Подписаться'}
-                  </button>
-                </div>
-                {subscribed ? (
-                  <p className="ok" role="status">
-                    Спасибо! Первое письмо придёт с анонсом новой коллекции.
-                  </p>
-                ) : (
-                  <p className="note">Без спама. Отписка в один клик.</p>
-                )}
-              </form>
-            </Reveal>
+            <form
+              className="subscribe"
+              data-reveal
+              onSubmit={event => {
+                event.preventDefault()
+                if (!email.trim() || !dataConsent) return
+                setSubscribed(true)
+              }}
+            >
+              <label htmlFor="email">Подписка на новости</label>
+              <div className="subscribe__row">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  placeholder="ваша@почта.ru"
+                  value={email}
+                  onChange={event => {
+                    setEmail(event.target.value)
+                    setSubscribed(false)
+                  }}
+                />
+                <button className="button button--light" type="submit">
+                  {subscribed ? <Check size={15} aria-hidden="true" /> : null}
+                  {subscribed ? 'Готово' : 'Подписаться'}
+                </button>
+              </div>
+
+              <label className="consent">
+                <input
+                  type="checkbox"
+                  checked={dataConsent}
+                  onChange={event => {
+                    setDataConsent(event.target.checked)
+                    setSubscribed(false)
+                  }}
+                  required
+                />
+                <span className="consent__box" aria-hidden="true">
+                  <Check size={12} />
+                </span>
+                <span>Согласен на обработку адреса электронной почты</span>
+              </label>
+              <label className="consent">
+                <input
+                  type="checkbox"
+                  checked={mailConsent}
+                  onChange={event => {
+                    setMailConsent(event.target.checked)
+                    setSubscribed(false)
+                  }}
+                />
+                <span className="consent__box" aria-hidden="true">
+                  <Check size={12} />
+                </span>
+                <span>Согласен получать письма с новостями (необязательно)</span>
+              </label>
+              <div className="subscribe__links">
+                <button
+                  className="inline-link"
+                  type="button"
+                  onClick={() => setLegalOpen('privacy')}
+                >
+                  Конфиденциальность
+                </button>
+                <button
+                  className="inline-link"
+                  type="button"
+                  onClick={() => setLegalOpen('delete')}
+                >
+                  Удаление данных
+                </button>
+                <button
+                  className="inline-link"
+                  type="button"
+                  onClick={() => setLegalOpen('cookies')}
+                >
+                  Cookie
+                </button>
+              </div>
+
+              <p className="subscribe__note" role={subscribed ? 'status' : undefined}>
+                {subscribed
+                  ? 'Форма демонстрационная: адрес не отправлен и не сохранён.'
+                  : 'Отдельное согласие на письма можно не ставить.'}
+              </p>
+            </form>
           </div>
         </section>
       </main>
 
       <footer className="site-footer">
         <div className="container">
-          <div className="footer-grid">
-            <div>
-              <p className="footer-brand">FOREN JON'S</p>
-              <p style={{ fontSize: '0.9rem', maxWidth: '30ch' }}>
-                Серебряные браслеты ручной работы. С 2008 года.
-              </p>
+          <div className="footer__top">
+            <div className="footer__brand">
+              <p>VOREN JONS</p>
+              <span>Демонстрация серебряных цепей. Реквизиты не указаны.</span>
             </div>
-
-            <div>
-              <h4>Навигация</h4>
+            <div className="footer__col">
+              <h3>Навигация</h3>
               <ul>
                 {navLinks.map(link => (
                   <li key={link.href}>
@@ -641,63 +947,124 @@ export default function App() {
                 ))}
               </ul>
             </div>
-
-            <div>
-              <h4>Контакты</h4>
-              <ul>
-                <li>
-                  <a href="tel:+74950000000">
-                    <Phone size={14} aria-hidden="true" style={{ display: 'inline' }} /> +7 495
-                    000-00-00
-                  </a>
-                </li>
-                <li>
-                  <a href="mailto:hello@forenjons.com">
-                    <Mail size={14} aria-hidden="true" style={{ display: 'inline' }} />{' '}
-                    hello@forenjons.com
-                  </a>
-                </li>
-                <li>
-                  <MapPin size={14} aria-hidden="true" style={{ display: 'inline' }} /> Москва,
-                  ул. Ильинка, 12
-                </li>
+            <div className="footer__col">
+              <h3>Реквизиты</h3>
+              <ul className="footer__placeholders">
+                <li>Наименование — <span>указать</span></li>
+                <li>ИНН / ОГРНИП — <span>указать</span></li>
+                <li>Адрес — <span>указать</span></li>
+                <li>Телефон — <span>указать</span></li>
+                <li>E-mail — <span>указать</span></li>
               </ul>
             </div>
-
-            <div>
-              <h4>Соцсети</h4>
+            <div className="footer__col">
+              <h3>Документы</h3>
               <ul>
                 <li>
-                  <a href="https://instagram.com" rel="noopener noreferrer" target="_blank">
-                    Instagram
-                  </a>
+                  <button type="button" onClick={() => setLegalOpen('privacy')}>
+                    Конфиденциальность <ArrowUpRight size={12} aria-hidden="true" />
+                  </button>
                 </li>
                 <li>
-                  <a href="https://t.me" rel="noopener noreferrer" target="_blank">
-                    Telegram
-                  </a>
+                  <button type="button" onClick={() => setLegalOpen('terms')}>
+                    Пользовательское соглашение <ArrowUpRight size={12} aria-hidden="true" />
+                  </button>
                 </li>
                 <li>
-                  <a href="https://youtube.com" rel="noopener noreferrer" target="_blank">
-                    YouTube
-                  </a>
+                  <button type="button" onClick={() => setLegalOpen('seller')}>
+                    Сведения об исполнителе <ArrowUpRight size={12} aria-hidden="true" />
+                  </button>
+                </li>
+                <li>
+                  <button type="button" onClick={() => setLegalOpen('refund')}>
+                    Возврат и обмен <ArrowUpRight size={12} aria-hidden="true" />
+                  </button>
+                </li>
+                <li>
+                  <button type="button" onClick={() => setLegalOpen('cookies')}>
+                    Файлы cookie <ArrowUpRight size={12} aria-hidden="true" />
+                  </button>
+                </li>
+                <li>
+                  <button type="button" onClick={() => setLegalOpen('delete')}>
+                    Удаление данных <ArrowUpRight size={12} aria-hidden="true" />
+                  </button>
                 </li>
               </ul>
             </div>
           </div>
-
-          <div className="footer-bottom">
-            <span>© 2026 FOREN JON'S. Все права защищены.</span>
-            <span>
-              Публичная оферта · Политика конфиденциальности · Возврат и обмен · Серебро 925
-            </span>
+          <div className="footer__bottom">
+            <span>© 2026 VOREN JONS. Все права защищены.</span>
+            <span>Демонстрационная версия · реквизиты не указаны</span>
           </div>
         </div>
       </footer>
 
+      {legalOpen && (
+        <div
+          className="legal"
+          role="presentation"
+          onMouseDown={event => {
+            if (event.target === event.currentTarget) setLegalOpen(null)
+          }}
+        >
+          <div
+            ref={legalPanelRef}
+            className="legal__panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="legal-title"
+          >
+            <button
+              ref={legalCloseRef}
+              className="legal__close"
+              type="button"
+              aria-label="Закрыть"
+              onClick={() => setLegalOpen(null)}
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
+            <p className="index-label">Юридическая информация</p>
+            <h2 id="legal-title">{legalDocs[legalOpen].title}</h2>
+            <div className="legal__body">
+              {legalDocs[legalOpen].body.map((paragraph, i) => (
+                <p key={i} dangerouslySetInnerHTML={{ __html: paragraph }} />
+              ))}
+            </div>
+            <p className="legal__foot">
+              Демонстрационная версия. Заполните реквизиты до публикации.
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className={`toast${toast ? ' is-on' : ''}`} role="status" aria-live="polite">
         {toast}
       </div>
+
+      <button
+        className={`to-top${showTop ? ' is-on' : ''}`}
+        type="button"
+        aria-label="Наверх"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      >
+        <ArrowUp size={17} aria-hidden="true" />
+      </button>
+
+      <CartDrawer
+        open={cartOpen}
+        items={cartItems}
+        onClose={() => setCartOpen(false)}
+        onQty={changeQty}
+        onRemove={id => setCartItems(items => items.filter(item => item.id !== id))}
+      />
+
+      <Lightbox
+        images={gallery}
+        index={lightbox}
+        onClose={() => setLightbox(null)}
+        onStep={stepLightbox}
+      />
     </>
   )
 }
