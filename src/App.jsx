@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   ArrowDown,
   ArrowRight,
@@ -26,30 +26,57 @@ const navLinks = [
   { href: '#contact', label: 'Подписка' },
 ]
 
-// Полные, не обрезанные цепи без фона. Вырезаны из собственных фотографий
-// репозитория скриптом scripts/prepare_assets.py — без сторонних лицензий.
-const gallery = [
+// Две отдельные цепи для продажи. Изображения без фона, полный объект не обрезан.
+// Вырезаны из собственных фотографий/scripts/sources скриптом scripts/prepare_assets.py.
+const products = [
   {
-    src: asset('media/chain-01.webp'),
-    label: 'Целая цепь',
-    alt: 'Полная серебряная цепь без фона, замкнутый контур',
+    id: 'curb',
+    number: '01',
+    title: 'Curb Link 925',
+    lead:
+      'Плотное плетение из плоских звеньев ложится на запястье без зазоров. Каждое звено паяется и полируется вручную — линия остаётся ровной на всей длине.',
+    price: 14900,
+    images: [
+      {
+        src: asset('media/chain-01.webp'),
+        label: 'Целая цепь',
+        alt: 'Полная серебряная цепь без фона, замкнутый контур',
+      },
+      {
+        src: asset('media/chain-02.webp'),
+        label: 'Контраст',
+        alt: 'Та же цепь при контрастном освещении, без фона',
+      },
+      {
+        src: asset('media/chain-03.webp'),
+        label: 'Звенья',
+        alt: 'Отдельные звенья и замок цепи, без фона',
+      },
+    ],
   },
   {
-    src: asset('media/chain-02.webp'),
-    label: 'Контраст',
-    alt: 'Та же цепь при контрастном освещении, без фона',
-  },
-  {
-    src: asset('media/chain-03.webp'),
-    label: 'Звенья',
-    alt: 'Отдельные звенья и замок цепи, без фона',
-  },
-  {
-    src: asset('media/chain-05.webp'),
-    label: 'Новая цепь',
-    alt: 'Серебряная цепь без фона, крупный план',
+    id: 'sample',
+    number: '02',
+    title: 'Цепь по образцу 925',
+    lead:
+      'Отдельная цепь по присланному образцу. Характеристики, вес и комплект документов уточняются продавцом до покупки.',
+    price: 17900,
+    images: [
+      {
+        src: asset('media/chain-05.webp'),
+        label: 'Образец',
+        alt: 'Серебряная цепь по образцу, без фона',
+      },
+      {
+        src: asset('media/chain-06.webp'),
+        label: 'Деталь',
+        alt: 'Крупный план звеньев цепи по образцу, без фона',
+      },
+    ],
   },
 ]
+
+const formatPrice = value => `${new Intl.NumberFormat('ru-RU').format(value)} ₽`
 
 const sizes = ['17', '18', '19', '20']
 const finishes = [
@@ -181,7 +208,7 @@ const legalDocs = {
   },
 }
 
-function useScrollReveal() {
+function useScrollReveal(dependency) {
   useEffect(() => {
     const nodes = Array.from(document.querySelectorAll('[data-reveal]'))
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches
@@ -204,7 +231,7 @@ function useScrollReveal() {
 
     nodes.forEach(node => observer.observe(node))
     return () => observer.disconnect()
-  }, [])
+  }, [dependency])
 }
 
 function Words({ text, className = '', as: Tag = 'h2', delay = 0, ...props }) {
@@ -224,87 +251,10 @@ function Words({ text, className = '', as: Tag = 'h2', delay = 0, ...props }) {
   )
 }
 
-function AssemblyFilm() {
-  const [mode, setMode] = useState('rotate')
-  const [angle, setAngle] = useState(0)
-  const [paused, setPaused] = useState(
-    () => window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false
-  )
-  const dragRef = useRef(null)
-  const chain = asset('media/chain-04.webp')
-
-  const onPointerDown = event => {
-    dragRef.current = { x: event.clientX, angle }
-    event.currentTarget.setPointerCapture?.(event.pointerId)
-  }
-
-  const onPointerMove = event => {
-    if (!dragRef.current) return
-    setAngle(dragRef.current.angle + (event.clientX - dragRef.current.x) * 0.35)
-  }
-
-  const onPointerUp = () => {
-    dragRef.current = null
-  }
-
-  return (
-    <div className="film">
-      <div
-        className={`film__frame is-${mode}${paused ? ' is-paused' : ''}`}
-        role="img"
-        aria-label="Три прозрачные копии цепи: вращение, разборка и сборка"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-      >
-        <span className="film__label">VOREN JONS / 3 COPIES</span>
-        <div className="film__orbit" key={mode} style={{ '--drag': `${angle}deg` }}>
-          {[0, 1, 2].map(i => (
-            <img
-              key={i}
-              src={chain}
-              alt=""
-              aria-hidden="true"
-              draggable="false"
-              className={`film__chain film__chain--${i + 1}`}
-            />
-          ))}
-        </div>
-        <span className="film__hint">Перетащите, чтобы повернуть</span>
-      </div>
-      <div className="film__controls" role="group" aria-label="Управление анимацией цепи">
-        <button
-          type="button"
-          aria-pressed={mode === 'rotate'}
-          onClick={() => setMode('rotate')}
-        >
-          Крутить
-        </button>
-        <button
-          type="button"
-          aria-pressed={mode === 'explode'}
-          onClick={() => setMode('explode')}
-        >
-          Разобрать
-        </button>
-        <button
-          type="button"
-          aria-pressed={mode === 'assemble'}
-          onClick={() => setMode('assemble')}
-        >
-          Собрать
-        </button>
-        <button type="button" aria-pressed={paused} onClick={() => setPaused(value => !value)}>
-          {paused ? 'Пуск' : 'Пауза'}
-        </button>
-      </div>
-    </div>
-  )
-}
-
 export default function App() {
-  useScrollReveal()
+  const [activeProductId, setActiveProductId] = useState(products[0].id)
+  const product = products.find(item => item.id === activeProductId) ?? products[0]
+  useScrollReveal(activeProductId)
 
   const [shot, setShot] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -365,8 +315,10 @@ export default function App() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const addToCart = () => {
-    const id = `${size}-${finish}`
+  const addToCart = product => {
+    const itemSize = product.size ?? size
+    const itemFinish = product.finish ?? finish
+    const id = `${product.id}-${itemSize}-${itemFinish}`
     setCartItems(items => {
       const existing = items.find(item => item.id === id)
       if (existing) {
@@ -378,15 +330,15 @@ export default function App() {
         ...items,
         {
           id,
-          title: 'Curb Link 925',
-          size,
-          finish: finishes.find(item => item.id === finish)?.label ?? '',
-          price: 14900,
+          title: product.title,
+          size: itemSize,
+          finish: finishes.find(item => item.id === itemFinish)?.label ?? '',
+          price: product.price,
           qty: 1,
         },
       ]
     })
-    setToast(`Curb Link 925 · ${size} см добавлен в корзину`)
+    setToast(`${product.title} · ${itemSize} см добавлен в корзину`)
   }
 
   const changeQty = (id, delta) => {
@@ -397,11 +349,14 @@ export default function App() {
     )
   }
 
-  const stepLightbox = delta => {
-    setLightbox(value =>
-      value === null ? value : (value + delta + gallery.length) % gallery.length
-    )
-  }
+  const stepLightbox = useCallback(
+    delta => {
+      setLightbox(value =>
+        value === null ? value : (value + delta + product.images.length) % product.images.length
+      )
+    },
+    [product.images.length]
+  )
 
   useEffect(() => {
     if (lightbox === null) return undefined
@@ -411,7 +366,7 @@ export default function App() {
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
-  }, [lightbox])
+  }, [lightbox, stepLightbox])
 
   return (
     <>
@@ -517,7 +472,7 @@ export default function App() {
             <div className="hero__visual" data-reveal style={{ '--i': 1 }}>
               <div className="hero__figure">
                 <img
-                  src={gallery[0].src}
+                  src={products[0].images[0].src}
                   alt="Серебряный браслет Curb Link 925"
                   width="1000"
                   height="1000"
@@ -526,7 +481,6 @@ export default function App() {
                 <span className="hero__figure-index">CURB LINK / 01</span>
                 <span className="hero__figure-note">Родий · 19 см · 32 г</span>
               </div>
-              <AssemblyFilm />
             </div>
           </div>
 
@@ -546,14 +500,34 @@ export default function App() {
         </div>
 
         <section className="section product" id="product" aria-labelledby="product-title">
+          <div className="container">
+            <div className="product-switch" role="group" aria-label="Выбрать цепь">
+              {products.map(item => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`product-switch__item${item.id === activeProductId ? ' is-active' : ''}`}
+                  aria-pressed={item.id === activeProductId}
+                  onClick={() => {
+                    setActiveProductId(item.id)
+                    setShot(0)
+                    setWishlist(false)
+                  }}
+                >
+                  <span className="product-switch__num">{item.number}</span>
+                  <span>{item.title}</span>
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="container product__layout">
             <div className="product__gallery" data-reveal>
               <div className="product__stage">
                 <img
-                  key={gallery[shot].src}
+                  key={product.images[shot].src}
                   className={finish === 'oxidised' ? 'is-oxidised' : ''}
-                  src={gallery[shot].src}
-                  alt={gallery[shot].alt}
+                  src={product.images[shot].src}
+                  alt={product.images[shot].alt}
                   width="1000"
                   height="1000"
                   loading="lazy"
@@ -569,11 +543,11 @@ export default function App() {
                   }}
                 />
                 <span className="product__counter">
-                  {String(shot + 1).padStart(2, '0')} / {String(gallery.length).padStart(2, '0')}
+                  {String(shot + 1).padStart(2, '0')} / {String(product.images.length).padStart(2, '0')}
                 </span>
               </div>
               <div className="gallery-nav" role="group" aria-label="Ракурсы изделия">
-                {gallery.map((item, i) => (
+                {product.images.map((item, i) => (
                   <button
                     key={item.src}
                     className={`gallery-nav__item${i === shot ? ' is-active' : ''}`}
@@ -590,14 +564,14 @@ export default function App() {
 
             <div className="product__detail">
               <p className="index-label" data-reveal>
-                Коллекция 01 — плетение curb
+                Изделие {product.number} — {product.title}
               </p>
               <div className="product__title-row" data-reveal>
                 <Words
                   as="h2"
                   id="product-title"
                   className="product__title"
-                  text="Curb Link 925"
+                  text={product.title}
                   delay={0.05}
                 />
                 <button
@@ -614,13 +588,11 @@ export default function App() {
                 </button>
               </div>
               <p className="product__lead" data-reveal>
-                Плотное плетение из плоских звеньев ложится на запястье без зазоров.
-                Каждое звено паяется и полируется вручную — линия остаётся ровной
-                на всей длине.
+                {product.lead}
               </p>
 
               <div className="product__price" data-reveal>
-                <strong>14 900 ₽</strong>
+                <strong>{formatPrice(product.price)}</strong>
                 <span>наличие и доставка уточняются продавцом</span>
               </div>
               <p className="product__disclaimer" data-reveal>
@@ -673,15 +645,15 @@ export default function App() {
                 </div>
                 <div>
                   <dt>Длина</dt>
-                  <dd>19 см + 2 см удлинитель</dd>
+                  <dd>{product.id === 'curb' ? '19 см + 2 см удлинитель' : 'Уточняется продавцом'}</dd>
                 </div>
                 <div>
                   <dt>Вес</dt>
-                  <dd>32 г (пример)</dd>
+                  <dd>{product.id === 'curb' ? '32 г (пример)' : 'Уточняется продавцом'}</dd>
                 </div>
                 <div>
                   <dt>Замок</dt>
-                  <dd>Карабин-кольцо</dd>
+                  <dd>{product.id === 'curb' ? 'Карабин-кольцо' : 'Уточняется продавцом'}</dd>
                 </div>
               </dl>
 
@@ -709,7 +681,11 @@ export default function App() {
               </div>
 
               <div className="product__actions" data-reveal>
-                <button className="button button--dark" type="button" onClick={addToCart}>
+                <button
+                  className="button button--dark"
+                  type="button"
+                  onClick={() => addToCart(product)}
+                >
                   Добавить в корзину
                   <ArrowUpRight size={16} aria-hidden="true" />
                 </button>
@@ -779,6 +755,46 @@ export default function App() {
         </section>
 
         <ChainStudy />
+
+        <section className="section meshy" id="model" aria-labelledby="model-title">
+          <div className="container meshy__layout">
+            <div className="meshy__copy" data-reveal>
+              <p className="index-label index-label--light">03а / 3D-визуализация</p>
+              <Words
+                as="h2"
+                id="model-title"
+                text="Объём звена"
+                className="meshy__title"
+              />
+              <p className="meshy__lead">
+                Прозрачный рендер 3D-модели veron_cuban_bracelet из Meshy. Звенья
+                вращаются мягким циклом — без серого фона и стороннего плеера.
+              </p>
+              <a
+                className="inline-link meshy__link"
+                href="https://www.meshy.ai/3d-models/7ecc728f-3734-4d20-92c1-6d3cb17ae2d8?utm_medium=referral-program&utm_source=meshy&utm_content=LGNRCS&share_type=3d-models"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Открыть модель на Meshy
+                <ArrowUpRight size={15} aria-hidden="true" />
+              </a>
+            </div>
+
+            <div className="meshy__stage" data-reveal>
+              <span className="meshy__code">MESHY / VERON_CUBAN_BRACELET</span>
+              <img
+                className="meshy__model"
+                src={asset('media/chain-meshy.webp')}
+                alt="Объёмная 3D-модель серебряной цепи на прозрачном фоне"
+                width="512"
+                height="512"
+                loading="lazy"
+              />
+              <span className="meshy__hint">3D-рендер · циклическое движение</span>
+            </div>
+          </div>
+        </section>
 
         <section className="section story" id="about" aria-labelledby="about-title">
           <div className="container story__layout">
@@ -1086,7 +1102,7 @@ export default function App() {
       />
 
       <Lightbox
-        images={gallery}
+        images={product.images}
         index={lightbox}
         onClose={() => setLightbox(null)}
         onStep={stepLightbox}

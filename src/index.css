@@ -58,6 +58,21 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea,
+select,
+[contenteditable='true'],
+.legal__body {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+img {
+  -webkit-user-drag: none;
 }
 
 body.menu-open {
@@ -653,173 +668,6 @@ ol {
   color: var(--muted);
 }
 
-.film {
-  align-self: flex-end;
-  width: min(64%, 320px);
-}
-
-.film__frame {
-  position: relative;
-  overflow: hidden;
-  background: var(--dark);
-  aspect-ratio: 16 / 9;
-  cursor: grab;
-  touch-action: none;
-}
-
-.film__frame:active {
-  cursor: grabbing;
-}
-
-.film__orbit {
-  position: absolute;
-  inset: 0;
-  transform: perspective(900px) rotateY(var(--drag, 0deg));
-  transform-style: preserve-3d;
-  transition: transform 0.18s ease-out;
-}
-
-.film__chain {
-  position: absolute;
-  top: 4%;
-  left: 12%;
-  width: 76%;
-  height: 92%;
-  object-fit: contain;
-  transform-origin: center;
-  pointer-events: none;
-  filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.35));
-}
-
-.film__chain--1 {
-  animation: chain-orbit-a 7s ease-in-out infinite alternate;
-}
-
-.film__chain--2 {
-  opacity: 0.72;
-  animation: chain-orbit-b 9s ease-in-out infinite alternate;
-}
-
-.film__chain--3 {
-  opacity: 0.48;
-  animation: chain-orbit-c 11s ease-in-out infinite alternate;
-}
-
-@keyframes chain-orbit-a {
-  from { transform: rotate(-12deg) translate3d(-5%, 2%, 0); }
-  to { transform: rotate(14deg) translate3d(6%, -3%, 0); }
-}
-
-@keyframes chain-orbit-b {
-  from { transform: rotate(18deg) translate3d(4%, -4%, 0); }
-  to { transform: rotate(-16deg) translate3d(-6%, 3%, 0); }
-}
-
-@keyframes chain-orbit-c {
-  from { transform: rotate(-24deg) translate3d(-2%, 4%, 0); }
-  to { transform: rotate(22deg) translate3d(3%, -5%, 0); }
-}
-
-.film__frame.is-paused .film__chain {
-  animation-play-state: paused;
-}
-
-.film__frame.is-explode .film__chain {
-  animation: none;
-}
-
-.film__frame.is-explode .film__chain--1 {
-  transform: translate(-34%, -8%) rotate(-32deg) scale(0.78);
-}
-
-.film__frame.is-explode .film__chain--2 {
-  opacity: 0.8;
-  transform: translate(32%, 4%) rotate(28deg) scale(0.82);
-}
-
-.film__frame.is-explode .film__chain--3 {
-  opacity: 0.62;
-  transform: translate(0, 24%) rotate(8deg) scale(0.7);
-}
-
-.film__frame.is-assemble .film__chain--1 {
-  animation: chain-assemble-a 1.6s var(--ease) both;
-}
-
-.film__frame.is-assemble .film__chain--2 {
-  animation: chain-assemble-b 1.6s var(--ease) both;
-}
-
-.film__frame.is-assemble .film__chain--3 {
-  animation: chain-assemble-c 1.6s var(--ease) both;
-}
-
-@keyframes chain-assemble-a {
-  from { transform: translate(-34%, -8%) rotate(-32deg) scale(0.78); }
-  to { transform: translate(0, 0) rotate(-6deg) scale(1); }
-}
-
-@keyframes chain-assemble-b {
-  from { opacity: 0.8; transform: translate(32%, 4%) rotate(28deg) scale(0.82); }
-  to { opacity: 0.72; transform: translate(0, 0) rotate(4deg) scale(1); }
-}
-
-@keyframes chain-assemble-c {
-  from { opacity: 0.62; transform: translate(0, 24%) rotate(8deg) scale(0.7); }
-  to { opacity: 0.48; transform: translate(0, 0) rotate(0) scale(1); }
-}
-
-.film__label {
-  position: absolute;
-  top: 12px;
-  left: 14px;
-  z-index: 2;
-  font-size: 8px;
-  letter-spacing: 0.2em;
-  color: rgba(255, 255, 255, 0.78);
-}
-
-.film__hint {
-  position: absolute;
-  right: 14px;
-  bottom: 10px;
-  z-index: 2;
-  font-size: 8px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.62);
-  pointer-events: none;
-}
-
-.film__controls {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
-  margin-top: 10px;
-}
-
-.film__controls button {
-  padding: 9px 6px;
-  border: 1px solid var(--line);
-  color: var(--ink);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  transition: color 0.3s var(--ease), border-color 0.3s var(--ease), background 0.3s var(--ease);
-}
-
-.film__controls button:hover,
-.film__controls button[aria-pressed='true'] {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--paper-2);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .film__chain {
-    animation: none !important;
-  }
-}
 
 .hero__rule {
   height: 1px;
@@ -879,6 +727,49 @@ ol {
 }
 
 /* ---------- Product ---------- */
+
+.product-switch {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 18px;
+  margin-bottom: 34px;
+  border-top: 1px solid var(--line);
+}
+
+.product-switch__item {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 18px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transition:
+    color 0.3s var(--ease),
+    background 0.3s var(--ease),
+    border-color 0.3s var(--ease);
+}
+
+.product-switch__item:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.product-switch__item.is-active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper-2);
+}
+
+.product-switch__num {
+  font-family: var(--font-display);
+  font-size: 16px;
+  letter-spacing: 0;
+  line-height: 1;
+}
 
 .product__layout {
   display: grid;
@@ -2106,6 +1997,95 @@ ol {
   border-right: 1px solid var(--dark-line);
 }
 
+/* ---------- Meshy 3D render ---------- */
+
+.meshy {
+  --metal: var(--metal-dark);
+  background: #0b0b0b;
+  color: var(--paper-2);
+}
+
+.meshy__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
+  gap: clamp(3rem, 7vw, 8rem);
+  align-items: center;
+}
+
+.meshy .index-label {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.meshy__title {
+  margin-top: 24px;
+  font-size: clamp(3rem, 6vw, 6rem);
+  color: var(--paper-2);
+}
+
+.meshy__lead {
+  max-width: 42ch;
+  margin-top: 26px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.meshy__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.meshy__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--dark-line);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.055), transparent 62%),
+    #0e0e0e;
+  overflow: hidden;
+}
+
+.meshy__model {
+  width: 88%;
+  height: 88%;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.55));
+  animation: meshy-turn 9s var(--ease) infinite alternate;
+  transform-origin: 50% 54%;
+}
+
+@keyframes meshy-turn {
+  from {
+    transform: perspective(900px) rotateY(-17deg) rotateZ(-4deg) scale(0.96);
+  }
+  to {
+    transform: perspective(900px) rotateY(17deg) rotateZ(4deg) scale(1.04);
+  }
+}
+
+.meshy__code,
+.meshy__hint {
+  position: absolute;
+  z-index: 1;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.meshy__code {
+  top: 18px;
+  left: 20px;
+}
+
+.meshy__hint {
+  right: 20px;
+  bottom: 18px;
+}
+
 /* ---------- Cart drawer & lightbox ---------- */
 
 .drawer {
@@ -2386,10 +2366,6 @@ ol {
     aspect-ratio: 1.25 / 1;
   }
 
-  .film {
-    width: min(58%, 320px);
-  }
-
   .product__detail {
     padding-top: 0;
   }
@@ -2464,11 +2440,6 @@ ol {
 
   .hero__figure {
     aspect-ratio: 1 / 1;
-  }
-
-  .film {
-    align-self: stretch;
-    width: 100%;
   }
 
   .statement__inner {
@@ -2641,6 +2612,18 @@ ol {
 
 }
 
+@media (max-width: 760px) {
+  .meshy__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .meshy__stage {
+    max-width: 520px;
+    width: 100%;
+    justify-self: center;
+  }
+}
+
 @media (max-width: 420px) {
   .brand {
     font-size: 18px;
@@ -2690,7 +2673,8 @@ ol {
 
   .hero__title > span,
   .hero__figure img,
-  .product__stage img {
+  .product__stage img,
+  .meshy__model {
     opacity: 1 !important;
     filter: none !important;
     transform: none !important;
