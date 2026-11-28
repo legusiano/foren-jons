@@ -271,11 +271,13 @@ export default function App() {
   const [finish, setFinish] = useState('polished')
   const [wishlist, setWishlist] = useState(false)
   const [detailsOpen, setDetailsOpen] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [showTop, setShowTop] = useState(false)
 
   const legalPanelRef = useRef(null)
   const legalCloseRef = useRef(null)
+  const progressRef = useRef(null)
+  const topRef = useRef(null)
+  const meshyRef = useRef(null)
+  const heroScrollRef = useRef(null)
   useFocusTrap(Boolean(legalOpen), legalPanelRef, legalCloseRef)
 
   const cartCount = cartItems.reduce((sum, item) => sum + item.qty, 0)
@@ -304,15 +306,49 @@ export default function App() {
     return () => document.body.classList.remove('menu-open')
   }, [menuOpen, legalOpen, cartOpen, lightbox])
 
+  // Прогресс и кнопка «наверх» обновляются прямо в DOM один раз за кадр,
+  // чтобы не перерисовывать всё React-дерево на каждое scroll-событие.
   useEffect(() => {
-    const onScroll = () => {
+    let frame = 0
+    let wasVisible = null
+    const update = () => {
+      frame = 0
       const max = document.documentElement.scrollHeight - window.innerHeight
-      setProgress(max > 0 ? Math.min(100, (window.scrollY / max) * 100) : 0)
-      setShowTop(window.scrollY > window.innerHeight * 0.9)
+      const ratio = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0
+      if (progressRef.current) {
+        progressRef.current.style.transform = `scaleX(${ratio})`
+      }
+      const visible = window.scrollY > window.innerHeight * 0.9
+      if (visible !== wasVisible) {
+        topRef.current?.classList.toggle('is-on', visible)
+        wasVisible = visible
+      }
     }
-    onScroll()
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(update)
+    }
+    update()
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    return () => {
+      window.removeEventListener('scroll', onScroll)
+      if (frame) window.cancelAnimationFrame(frame)
+    }
+  }, [])
+
+  // Бесконечные анимации работают только рядом с экраном.
+  useEffect(() => {
+    const nodes = [meshyRef.current, heroScrollRef.current].filter(Boolean)
+    if (!nodes.length || typeof IntersectionObserver === 'undefined') return undefined
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          entry.target.classList.toggle('is-paused', !entry.isIntersecting)
+        })
+      },
+      { rootMargin: '120px' }
+    )
+    nodes.forEach(node => observer.observe(node))
+    return () => observer.disconnect()
   }, [])
 
   const addToCart = product => {
@@ -374,11 +410,7 @@ export default function App() {
         Перейти к содержимому
       </a>
 
-      <div
-        className="scroll-progress"
-        aria-hidden="true"
-        style={{ transform: `scaleX(${progress / 100})` }}
-      />
+      <div className="scroll-progress" ref={progressRef} aria-hidden="true" />
 
       <header className="site-header">
         <div className="container site-header__inner">
@@ -463,7 +495,7 @@ export default function App() {
                   <ArrowRight size={15} aria-hidden="true" />
                 </a>
               </div>
-              <a className="hero__scroll" href="#product">
+              <a className="hero__scroll" ref={heroScrollRef} href="#product">
                 <ArrowDown size={14} aria-hidden="true" />
                 Листайте вниз
               </a>
@@ -476,6 +508,7 @@ export default function App() {
                   alt="Серебряный браслет Curb Link 925"
                   width="1000"
                   height="1000"
+                  decoding="async"
                   fetchPriority="high"
                 />
                 <span className="hero__figure-index">CURB LINK / 01</span>
@@ -531,6 +564,7 @@ export default function App() {
                   width="1000"
                   height="1000"
                   loading="lazy"
+                  decoding="async"
                   role="button"
                   tabIndex={0}
                   aria-label="Открыть большой просмотр"
@@ -726,6 +760,7 @@ export default function App() {
                   width="1312"
                   height="1312"
                   loading="lazy"
+                  decoding="async"
                 />
                 {anatomy.map((item, i) => (
                   <span
@@ -785,11 +820,13 @@ export default function App() {
               <span className="meshy__code">MESHY / VERON_CUBAN_BRACELET</span>
               <img
                 className="meshy__model"
+                ref={meshyRef}
                 src={asset('media/chain-meshy.webp')}
                 alt="Объёмная 3D-модель серебряной цепи на прозрачном фоне"
                 width="512"
                 height="512"
                 loading="lazy"
+                decoding="async"
               />
               <span className="meshy__hint">3D-рендер · циклическое движение</span>
             </div>
@@ -1085,7 +1122,8 @@ export default function App() {
       </div>
 
       <button
-        className={`to-top${showTop ? ' is-on' : ''}`}
+        className="to-top"
+        ref={topRef}
         type="button"
         aria-label="Наверх"
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
