@@ -1,4 +1,4 @@
-# WEBSITE COMPLIANCE REPORT — VOREN JONS
+# WEBSITE COMPLIANCE REPORT — ROVEN JONS
 
 Дата аудита: 26 ноября 2026 г.  
 Источник задания: текст сообщения пользователя «OPENCODE — WEBSITE LEGAL & PRIVACY COMPLIANCE SYSTEM». Файл `WEBSITE_COMPLIANCE_AUDIT.md` не найден ни в каталоге проекта, ни в домашнем каталоге пользователя; требования взяты из сообщения.
