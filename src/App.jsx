@@ -415,7 +415,7 @@ export default function App() {
       <header className="site-header">
         <div className="container site-header__inner">
           <a className="brand" href="#top" onClick={() => setMenuOpen(false)}>
-            VOREN <span>JONS</span>
+            ROVEN <span>JONS</span>
           </a>
 
           <nav className="site-nav" aria-label="Основная навигация">
@@ -477,7 +477,7 @@ export default function App() {
             <div className="hero__copy" data-reveal>
               <p className="index-label">01 / Серебряные цепи · коллекция Curb</p>
               <h1 className="hero__title" id="hero-title">
-                <span>VOREN</span>
+                <span>ROVEN</span>
                 <span className="hero__title-line">JONS<i>.</i></span>
               </h1>
               <p className="hero__kicker">Серебро, которое чувствуешь</p>
@@ -565,16 +565,6 @@ export default function App() {
                   height="1000"
                   loading="lazy"
                   decoding="async"
-                  role="button"
-                  tabIndex={0}
-                  aria-label="Открыть большой просмотр"
-                  onClick={() => setLightbox(shot)}
-                  onKeyDown={event => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault()
-                      setLightbox(shot)
-                    }
-                  }}
                 />
                 <span className="product__counter">
                   {String(shot + 1).padStart(2, '0')} / {String(product.images.length).padStart(2, '0')}
@@ -877,7 +867,7 @@ export default function App() {
           <div className="container manifesto__inner" data-reveal>
             <span className="manifesto__rule" />
             <p>Форма без лишнего</p>
-            <span className="manifesto__caption">VOREN JONS · Silver study · Demo</span>
+            <span className="manifesto__caption">ROVEN JONS · Silver study · Demo</span>
           </div>
         </section>
 
@@ -1013,7 +1003,7 @@ export default function App() {
         <div className="container">
           <div className="footer__top">
             <div className="footer__brand">
-              <p>VOREN JONS</p>
+              <p>ROVEN JONS</p>
               <span>Демонстрация серебряных цепей. Реквизиты не указаны.</span>
             </div>
             <div className="footer__col">
@@ -1073,7 +1063,7 @@ export default function App() {
             </div>
           </div>
           <div className="footer__bottom">
-            <span>© 2026 VOREN JONS. Все права защищены.</span>
+            <span>© 2026 ROVEN JONS. Все права защищены.</span>
             <span>Демонстрационная версия · реквизиты не указаны</span>
           </div>
         </div>

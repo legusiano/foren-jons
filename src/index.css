@@ -2,7 +2,7 @@
 @import "./assets/fonts/fonts.css";
 
 /* ============================================================
-   VOREN JONS — editorial luxury system
+   ROVEN JONS — editorial luxury system
    ============================================================ */
 
 :root {
@@ -1842,7 +1842,6 @@ ol {
 .study__link {
   transform-box: view-box;
   transform-origin: 0 0;
-  cursor: pointer;
   transition:
     transform 1.15s var(--ease),
     opacity 0.8s var(--ease);
@@ -1866,18 +1865,6 @@ ol {
   stroke: rgba(255, 255, 255, 0.72);
   stroke-width: 1.4;
   stroke-linecap: round;
-}
-
-.study__link.is-focused .study__link-body,
-.study__link:hover .study__link-body,
-.study__link:focus-visible .study__link-body {
-  stroke: #fafafa;
-  stroke-width: 9;
-}
-
-.study__link:focus-visible {
-  outline: 2px solid #fafafa;
-  outline-offset: 4px;
 }
 
 .study__corner {
