@@ -166,6 +166,14 @@ ol {
   width: 22px;
   height: 1px;
   background: var(--metal);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.9s var(--ease) 0.15s;
+}
+
+.is-in .index-label::before,
+.index-label.is-in::before {
+  transform: scaleX(1);
 }
 
 .index-label--light {
@@ -630,6 +638,13 @@ ol {
   contain: layout paint style;
 }
 
+.hero__parallax {
+  position: absolute;
+  inset: -5%;
+  width: 110%;
+  height: 110%;
+}
+
 .hero__figure img {
   width: 100%;
   height: 100%;
@@ -681,28 +696,46 @@ ol {
 /* ---------- Statement strip ---------- */
 
 .statement {
+  overflow: hidden;
   border-bottom: 1px solid var(--line-soft);
 }
 
-.statement__inner {
+.statement__track {
+  display: flex;
+  width: max-content;
+  animation: statement-drift 30s linear infinite;
+}
+
+.statement:hover .statement__track {
+  animation-play-state: paused;
+}
+
+.statement__group {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
   gap: clamp(18px, 4vw, 70px);
   min-height: 82px;
+  padding-inline: clamp(18px, 4vw, 70px);
   font-family: var(--font-display);
   font-size: clamp(0.95rem, 1.6vw, 1.35rem);
   font-style: italic;
   letter-spacing: 0.01em;
+  white-space: nowrap;
   color: var(--muted);
 }
 
 .statement__dot {
   width: 3px;
   height: 3px;
+  flex: none;
   border-radius: 50%;
   background: var(--metal);
+}
+
+@keyframes statement-drift {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
 }
 
 /* ---------- Section scaffold ---------- */
@@ -712,8 +745,27 @@ ol {
 }
 
 .section-head {
+  position: relative;
   max-width: 720px;
+  padding-bottom: 26px;
   margin-bottom: clamp(3.5rem, 6vw, 6rem);
+}
+
+.section-head::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 1px;
+  background: var(--line);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 1.2s var(--ease);
+}
+
+.section-head.is-in::after {
+  transform: scaleX(1);
 }
 
 .section-head .words {
@@ -787,6 +839,22 @@ ol {
   background: var(--paper);
   aspect-ratio: 1 / 1;
   contain: layout paint style;
+}
+
+.product__stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: var(--paper);
+  transform: scaleY(1);
+  transform-origin: top;
+  pointer-events: none;
+  transition: transform 1.25s var(--ease) 0.15s;
+}
+
+.product__gallery.is-in .product__stage::after {
+  transform: scaleY(0);
 }
 
 .product__stage img {
@@ -968,6 +1036,13 @@ ol {
   overflow: hidden;
   background: var(--paper);
   aspect-ratio: 1.12 / 1;
+}
+
+.craft__parallax {
+  position: absolute;
+  inset: -4%;
+  width: 108%;
+  height: 108%;
 }
 
 .craft__figure img {
@@ -2667,6 +2742,11 @@ ol {
   .words__item > span,
   .mobile-menu nav a {
     opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .statement__track {
+    animation: none !important;
     transform: none !important;
   }
 

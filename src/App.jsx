@@ -13,6 +13,7 @@ import {
 import CartDrawer from './components/CartDrawer'
 import ChainStudy from './components/ChainStudy'
 import Lightbox from './components/Lightbox'
+import Parallax from './components/Parallax'
 import { useFocusTrap } from './lib/focusTrap'
 
 const asset = path => `${import.meta.env.BASE_URL}${path}`
@@ -503,14 +504,16 @@ export default function App() {
 
             <div className="hero__visual" data-reveal style={{ '--i': 1 }}>
               <div className="hero__figure">
-                <img
-                  src={products[0].images[0].src}
-                  alt="Серебряный браслет Curb Link 925"
-                  width="1000"
-                  height="1000"
-                  decoding="async"
-                  fetchPriority="high"
-                />
+                <Parallax as="div" className="hero__parallax" speed={0.055}>
+                  <img
+                    src={products[0].images[0].src}
+                    alt="Серебряный браслет Curb Link 925"
+                    width="1000"
+                    height="1000"
+                    decoding="async"
+                    fetchPriority="high"
+                  />
+                </Parallax>
                 <span className="hero__figure-index">CURB LINK / 01</span>
                 <span className="hero__figure-note">Родий · 19 см · 32 г</span>
               </div>
@@ -523,12 +526,17 @@ export default function App() {
         </section>
 
         <div className="statement">
-          <div className="container statement__inner">
-            <span>Форма без лишнего</span>
-            <span className="statement__dot" aria-hidden="true" />
-            <span>Ручная сборка</span>
-            <span className="statement__dot" aria-hidden="true" />
-            <span>Серебро 925</span>
+          <div className="statement__track">
+            {[0, 1].map(copy => (
+              <div className="statement__group" key={copy} aria-hidden={copy === 1}>
+                <span>Форма без лишнего</span>
+                <span className="statement__dot" aria-hidden="true" />
+                <span>Ручная сборка</span>
+                <span className="statement__dot" aria-hidden="true" />
+                <span>Серебро 925</span>
+                <span className="statement__dot" aria-hidden="true" />
+              </div>
+            ))}
           </div>
         </div>
 
@@ -744,14 +752,16 @@ export default function App() {
 
             <div className="craft__layout">
               <div className="craft__figure" data-reveal>
-                <img
-                  src={asset('media/chain-03.webp')}
-                  alt="Разложенные детали браслета: звенья curb, замок-кольцо и кольца"
-                  width="1312"
-                  height="1312"
-                  loading="lazy"
-                  decoding="async"
-                />
+                <Parallax as="div" className="craft__parallax" speed={0.04}>
+                  <img
+                    src={asset('media/chain-03.webp')}
+                    alt="Разложенные детали браслета: звенья curb, замок-кольцо и кольца"
+                    width="1312"
+                    height="1312"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </Parallax>
                 {anatomy.map((item, i) => (
                   <span
                     key={item.label}
