@@ -61,7 +61,6 @@ function place(mode, i) {
 export default function ChainStudy() {
   const [mode, setMode] = useState(0)
   const [playing, setPlaying] = useState(false)
-  const [focused, setFocused] = useState(null)
   const [reduced] = useState(
     () => window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches ?? false
   )
@@ -75,14 +74,12 @@ export default function ChainStudy() {
     if (!playing || reduced) return undefined
     const id = window.setInterval(() => {
       setMode(value => (value + 1) % MODES.length)
-      setFocused(null)
     }, 2800)
     return () => window.clearInterval(id)
   }, [playing, reduced])
 
   const selectMode = index => {
     setMode(index)
-    setFocused(null)
     setPlaying(false)
   }
 
@@ -101,9 +98,6 @@ export default function ChainStudy() {
     }
   }
 
-  const caption = focused !== null
-    ? `Звено ${String(focused + 1).padStart(2, '0')} · ${focused === 15 ? 'замок-кольцо' : 'пайка и полировка'}`
-    : MODES[mode].note
 
   return (
     <section className="section study" id="study" aria-labelledby="study-title">
@@ -125,14 +119,14 @@ export default function ChainStudy() {
             aria-label="Интерактивная схема цепи. Стрелки — этапы, пробел — воспроизведение"
             onKeyDown={onKeyDown}
           >
-            <span className="study__corner study__corner--tl">VOREN JONS / STUDY 01</span>
+            <span className="study__corner study__corner--tl">ROVEN JONS / STUDY 01</span>
             <span className="study__corner study__corner--tr">СХЕМА · ДЕМО</span>
 
             <svg
               viewBox="0 0 1000 580"
               className="study__svg"
               role="group"
-              aria-label="Схема цепи из 16 звеньев. Выберите звено, чтобы увидеть его описание."
+              aria-label="Схема цепи из 16 звеньев."
             >
               <defs>
                 <linearGradient id="link-silver" x1="0" y1="0" x2="1" y2="1">
@@ -146,26 +140,15 @@ export default function ChainStudy() {
               <g className="study__links">
                 {LINKS.map((i, index) => {
                   const p = positions[index]
-                  const active = focused === i
                   return (
                     <g
                       key={i}
-                      className={`study__link${active ? ' is-focused' : ''}`}
-                      role="button"
-                      tabIndex={p.o === 0 ? -1 : 0}
-                      aria-label={`Звено ${String(i + 1).padStart(2, '0')}${i === 15 ? ' — замок-кольцо' : ' — пайка и полировка'}`}
-                      aria-pressed={active}
+                      className="study__link"
+                      aria-hidden="true"
                       style={{
                         transform: `translate(${p.x}px, ${p.y}px) rotate(${p.r}deg) scale(${p.s})`,
                         opacity: p.o,
                         transitionDelay: `${index * 32}ms`,
-                      }}
-                      onClick={() => setFocused(active ? null : i)}
-                      onKeyDown={event => {
-                        if (event.key !== 'Enter' && event.key !== ' ') return
-                        event.preventDefault()
-                        event.stopPropagation()
-                        setFocused(active ? null : i)
                       }}
                     >
                       <rect
@@ -193,7 +176,7 @@ export default function ChainStudy() {
 
             <div className="study__caption" aria-live="polite">
               <span>{MODES[mode].num} / 04</span>
-              <p>{caption}</p>
+              <p>{MODES[mode].note}</p>
             </div>
 
             <button
